@@ -1,0 +1,14 @@
+#pragma once
+
+enum class States
+{
+	START,
+	ID,
+	ARITHM_OPERATOR,
+	FLOAT_NUMBER,
+	ASSIGNMENT,
+	SEPARATOR,
+	COMMENT,	
+	ERROR
+};
+
