@@ -1,5 +1,4 @@
-﻿
-#include <iostream>
+﻿#include <iostream>
 #include "ComplexFront.h"
 
 
@@ -8,22 +7,18 @@ int main()
 	setlocale(LC_ALL, "rus");
 	
 	std::cout << " -> front part of simple compiler." << std::endl;
-	std::cout << "in separate parts for a while, but it's not for long time, i hope <-" << std::endl;
 	short selection = 4;
 	std::string file;
 
-	ComplexFront front;
-	front.code_to_ast("demo_for_lexer.txt");
-	front.draw_ast();
 
-	/*while (selection != 42)
+	while (selection != 42)
 	{
 		file = "";
 
 		std::cout << "\nyour turn to pick:\n"
-			<< "\t1. first part - symbol table.\n"
-			<< "\t2. second part - lexical analyzer.\n"
-			<< "\t3. third part - syntax analyzer.\n"
+			<< "\t1. front compile from the source code file.\n"
+			<< "\t2. console input front compile .\n"
+			<< "\t3. demonstration.\n"
 			<< "\t0. exit" << std::endl;
 		std::cout << "\nyour pick -> ";
 		std::cin >> selection;
@@ -33,24 +28,50 @@ int main()
 			std::cin.ignore(std::cin.rdbuf()->in_avail());
 			continue;
 		}
-
+		
 		switch (selection)
 		{
 		case 1:
-			
+			std::cout << "\ninput the path to file {C:\\TEMP\\example.txt} -> ";
+			std::cin >> file;
+			std::cout << file << std::endl;
+			try
+			{
+				ComplexFront front;
+				front.front_compile(file);
+				front.print_symbol_table();
+				front.print_line_and_tree();
+			}
+			catch (...) {}
 			break;
 		case 2:
-			
+			std::cout << "\ninput source code -> ";
+			try
+			{
+				/*
+				ComplexFront front;
+				front.front_compile(file);
+				front.print_symbol_table();
+				front.print_line_and_tree();*/
+			}
+			catch (...) {}
 			break;
 		case 3:
-			
+			try
+			{
+				ComplexFront front;
+				front.front_compile("demo.txt");
+				front.print_symbol_table();
+				front.print_line_and_tree();
+			}
+			catch (...) {}
 			break;
 		case 0:
 			selection = 42;
 		}
 
 		std::cout << "<====================================================================================>" << std::endl;
-	}*/
+	}
 
 	std::cout << "\nbye, bye\n" << std::endl;
 

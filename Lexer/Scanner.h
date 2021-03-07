@@ -21,7 +21,7 @@ struct LexicalScanner
 	private:
 		std::ifstream _file;
 		States _current_state;
-		std::vector<SyntaxToken> _lexeme_table;
+		std::vector<SyntaxToken>* _lexeme_table;
 		size_t _line_counter{1};
 		size_t _symbol_pos_at_line{1};
 

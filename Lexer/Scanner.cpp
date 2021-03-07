@@ -10,6 +10,7 @@ LexicalScanner::LexicalScanner(std::string& file)
 		throw "error -> invalid file name or path";
 	}
 	_current_state = States::START;
+	_lexeme_table = new std::vector<SyntaxToken>();
 }
 
 
@@ -22,7 +23,7 @@ LexicalScanner::~LexicalScanner()
 
 std::vector<SyntaxToken>* LexicalScanner::scan()
 {
-	_lexeme_table.clear();
+	_lexeme_table->clear();
 	std::string lexeme = "";
 
 	char curr_symbol = ' ';
@@ -65,9 +66,9 @@ std::vector<SyntaxToken>* LexicalScanner::scan()
 
 	if (_file.is_open())
 		_file.close();
-	_lexeme_table.push_back(SyntaxToken{ "", SyntaxTag::END_OF_FILE, 
+	_lexeme_table->push_back(SyntaxToken{ "", SyntaxTag::END_OF_FILE, 
 										_line_counter, _symbol_pos_at_line });
-	return &_lexeme_table;
+	return _lexeme_table;
 }
 
 size_t LexicalScanner::get_num_of_lines()
@@ -127,35 +128,35 @@ void LexicalScanner::id_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == ':')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::ASSIGNMENT;
 	}
 	else if (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::ARITHM_OPERATOR;
 	}
 	else if (symbol == '{')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::COMMENT;
 	}
 	else if (symbol == ';' || symbol == ')')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::SEPARATOR;
 	}
 	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::START;
@@ -173,7 +174,7 @@ void LexicalScanner::assignment_state_changing(char symbol, std::string& lexeme)
 	if (symbol == '=')
 	{
 		lexeme += symbol;
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::ASSIGN_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ASSIGN_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::START;
@@ -194,28 +195,28 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == '*' || symbol == '/')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::ARITHM_OPERATOR;
 	}
 	else if (symbol == '{')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::COMMENT;
 	}
 	else if (symbol == ';')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::SEPARATOR;
 	}
 	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::START;
@@ -231,14 +232,14 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 void LexicalScanner::separator_state_changing(char symbol, std::string& lexeme)
 {
 	if (lexeme == "(")
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::LP_TOKEN, 
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::LP_TOKEN, 
 											_line_counter, _symbol_pos_at_line });
 	else if (lexeme == ")")
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::RP_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::RP_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 	else if (lexeme == ";")
 	{
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::SEMICOLON_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::SEMICOLON_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 	}
 	lexeme = "";
@@ -288,16 +289,16 @@ void LexicalScanner::separator_state_changing(char symbol, std::string& lexeme)
 void LexicalScanner::arithm_operator_state_changing(char symbol, std::string& lexeme)
 {
 	if (lexeme == "+")
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::PLUS_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::PLUS_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 	else if (lexeme == "-")
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::MINUS_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::MINUS_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 	else if (lexeme == "*")
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::STAR_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::STAR_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 	else if (lexeme == "/")
-		_lexeme_table.push_back(SyntaxToken{ lexeme, SyntaxTag::SLASH_TOKEN,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::SLASH_TOKEN,
 											_line_counter, _symbol_pos_at_line });
 
 	lexeme = "";

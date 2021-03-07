@@ -1,5 +1,5 @@
 #include "../include/Parser.h"
-#include <fstream>
+
 
 
 SyntaxToken Parser::peek_token(size_t pos)
@@ -27,13 +27,13 @@ SyntaxToken Parser::lookahead()
 }
 
 
-std::vector<AstNode*>* Parser::parse()
+std::vector<AstNode*>* Parser::parse(HashMap<std::string, std::string>& symbol_table)
 {
 	std::vector<AstNode*>* ast_trees = new std::vector<AstNode*>;
 	for (int i = 0; i < _lines; i++)
 	{
 		ast_trees->push_back(new AstNode(AstTag::STMT));
-		stmt(ast_trees->at(i));
+		stmt(ast_trees->at(i), symbol_table);
 	}
 	return ast_trees;
 }
@@ -45,17 +45,19 @@ std::vector<SyntaxToken>* Parser::get_lexems()
 }
 
 
-bool Parser::stmt(AstNode* stmt_node)
+bool Parser::stmt(AstNode* stmt_node, HashMap<std::string, std::string>& symbol_table)
 {
 	// STMT -> ID := EXPR;
 	if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
+		if (symbol_table.search_pair(current_token().lexeme) == symbol_table.get_size())
+			symbol_table.insert(current_token().lexeme, "float");
 		stmt_node->add_child(new SyntaxToken(current_token()));
 		if (next_token().token_type == SyntaxTag::ASSIGN_TOKEN)
 		{
 			stmt_node->add_child(new SyntaxToken(current_token()));
 			AstNode* expr_node = new AstNode(AstTag::EXPRESSION);
-			if (expr(expr_node))
+			if (expr(expr_node, symbol_table))
 			{
 				stmt_node->add_child(expr_node);
 				if (next_token().token_type == SyntaxTag::SEMICOLON_TOKEN)
@@ -77,22 +79,22 @@ bool Parser::stmt(AstNode* stmt_node)
 	return false;
 }
 
-bool Parser::expr(AstNode* expr_node)
+bool Parser::expr(AstNode* expr_node, HashMap<std::string, std::string>& symbol_table)
 {
 	// EXPR -> TRANS ADD_SUB
 	AstNode* trans_node = new AstNode(AstTag::TRANS);
-	if (trans(trans_node))
+	if (trans(trans_node, symbol_table))
 	{
 		expr_node->add_child(trans_node);
 		AstNode* add_sub_node = new AstNode(AstTag::ADD_SUB);
-		if (add_sub(add_sub_node))
+		if (add_sub(add_sub_node, symbol_table))
 			expr_node->add_child(add_sub_node);
 		return true;
 	}
 	return false;
 }
 
-bool Parser::add_sub(AstNode* add_sub_node)
+bool Parser::add_sub(AstNode* add_sub_node, HashMap<std::string, std::string>& symbol_table)
 {
 	// ADD_SUB -> + TRANS ADD_SUB
 	SyntaxToken word = lookahead();
@@ -101,11 +103,11 @@ bool Parser::add_sub(AstNode* add_sub_node)
 		add_sub_node->add_child(new SyntaxToken(current_token()));
 		next_token();
 		AstNode* trans_node = new AstNode(AstTag::TRANS);
-		if (trans(trans_node))
+		if (trans(trans_node, symbol_table))
 		{
 			add_sub_node->add_child(trans_node);
 			AstNode* add_sub_node_nested = new AstNode(AstTag::ADD_SUB);
-			if (add_sub(add_sub_node_nested))
+			if (add_sub(add_sub_node_nested, symbol_table))
 				add_sub_node->add_child(add_sub_node_nested);
 			return true;
 		}
@@ -113,22 +115,22 @@ bool Parser::add_sub(AstNode* add_sub_node)
 	return false;
 }
 
-bool Parser::trans(AstNode* trans_node)
+bool Parser::trans(AstNode* trans_node, HashMap<std::string, std::string>& symbol_table)
 {
 	// TRANS -> FACTOR MUL_DIV
 	AstNode* factor_node = new AstNode(AstTag::FACTOR);
-	if (factor(factor_node))
+	if (factor(factor_node, symbol_table))
 	{
 		trans_node->add_child(factor_node);
 		AstNode* mul_div_node = new AstNode(AstTag::MUL_DIV);
-		if (mul_div(mul_div_node))
+		if (mul_div(mul_div_node, symbol_table))
 			trans_node->add_child(mul_div_node);
 		return true;
 	}
 	return false;
 }
 
-bool Parser::mul_div(AstNode* mul_div_node)
+bool Parser::mul_div(AstNode* mul_div_node, HashMap<std::string, std::string>& symbol_table)
 {
 	// MUL_DIV -> FACTOR MUL_DIV
 	SyntaxToken word = lookahead();
@@ -137,11 +139,11 @@ bool Parser::mul_div(AstNode* mul_div_node)
 		mul_div_node->add_child(new SyntaxToken(current_token()));
 		next_token();
 		AstNode* factor_node = new AstNode(AstTag::FACTOR);
-		if (factor(factor_node))
+		if (factor(factor_node, symbol_table))
 		{
 			mul_div_node->add_child(factor_node);
 			AstNode* mul_div_node_nested = new AstNode(AstTag::MUL_DIV);
-			if (mul_div(mul_div_node_nested))
+			if (mul_div(mul_div_node_nested, symbol_table))
 				mul_div_node->add_child(mul_div_node_nested);
 			return true;
 		}
@@ -149,14 +151,14 @@ bool Parser::mul_div(AstNode* mul_div_node)
 	return false;
 }
 
-bool Parser::factor(AstNode* factor_node)
+bool Parser::factor(AstNode* factor_node, HashMap<std::string, std::string>& symbol_table)
 {
 	// FACTOR -> ( EXPR ) | FLOAT_NUM | ID_TOKEN
 	if (next_token().token_type == SyntaxTag::LP_TOKEN)
 	{
 		factor_node->add_child(new SyntaxToken(current_token()));
 		AstNode* expr_node = new AstNode(AstTag::EXPRESSION);
-		if (expr(expr_node))
+		if (expr(expr_node, symbol_table))
 		{
 			factor_node->add_child(expr_node);
 			if (next_token().token_type == SyntaxTag::RP_TOKEN)
@@ -173,6 +175,8 @@ bool Parser::factor(AstNode* factor_node)
 	}
 	else if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
+		if (symbol_table.search_pair(current_token().lexeme) == symbol_table.get_size())
+			symbol_table.insert(current_token().lexeme, "float");
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
 	}

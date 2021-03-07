@@ -18,12 +18,18 @@ struct ComplexFront
 			if (el)
 				delete el;
 		}
+		delete _parsed_ast;
+		delete _lexems;
 	}
 
-	void code_to_ast(std::string file);
-	void draw_ast();
+	void front_compile(std::string file);
+	void draw_all_trees();
+	void print_parsed_lines();
+	void print_symbol_table();
+	void print_line_and_tree();
 
 	private:
 		std::vector<AstNode*>* _parsed_ast;
-		//HashMap<std::string, std::string> _symbol_table;
+		std::vector<SyntaxToken>* _lexems;
+		HashMap<std::string, std::string> _symbol_table;
 };
