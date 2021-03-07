@@ -46,7 +46,8 @@ example of syntactically correct sentences:
 parsing expamples:
 	
 	source code line - some_var := 0.9 * 10.5;
-	lexical analyzer output - <ID, some_var> <ASSIGN, := > <FLOAT_NUMBER, 0.9> <ARITHM_OPERATOR, * > <FLOAT_NUMBER, 10.5>
+	lexical analyzer output - 
+		<ID, some_var> <ASSIGN, := > <FLOAT_NUMBER, 0.9> <ARITHM_OPERATOR, * > <FLOAT_NUMBER, 10.5>
 	syntax analyzer output -				
 	|___ <STMT>
 		|--- <ID_TOKEN, some_var>
@@ -64,8 +65,8 @@ parsing expamples:
 # Front parts description
 
 Symbol table:
-    is a simple implementation of hash table thats supports adding identificators.
 
+    is a simple implementation of hash table thats supports adding identificators.
     hash table template arguments: K - type of storage key,
                         V - type of storage value,
                         H - hash function (by dedault used Hash<K>{})
@@ -79,7 +80,8 @@ Symbol table:
 
 Lexer:
   
-    is a simple state machine which reads source code lines from the file and recognize syntax elements (SyntaxToken).
+    is a simple state machine which reads source code lines from the file 
+    and recognize syntax elements (SyntaxToken).
     the lexer builds a table of tokens.
 
 Parser:
