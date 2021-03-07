@@ -15,12 +15,15 @@ struct LexicalScanner
 	LexicalScanner(std::string& file);
 	~LexicalScanner();
 
-	const std::vector<SyntaxToken>* scan();
+	std::vector<SyntaxToken>* scan();
+	size_t get_num_of_lines();
 
 	private:
 		std::ifstream _file;
 		States _current_state;
 		std::vector<SyntaxToken> _lexeme_table;
+		size_t _line_counter{1};
+		size_t _symbol_pos_at_line{1};
 
 		void start_state_changing(char symbol, std::string& lexeme);
 		void id_state_changing(char symbol, std::string& lexeme);

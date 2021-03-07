@@ -152,15 +152,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CompilerFrontend.cpp" />
-    <ClCompile Include="FirstPart.cpp" />
-    <ClCompile Include="FirstPart.h" />
+    <ClCompile Include="ComplexFront.cpp" />
     <ClCompile Include="Lexer\Scanner.cpp" />
     <ClCompile Include="Parser\ast_parser\AstNode.cpp" />
     <ClCompile Include="Parser\ast_parser\Parser.cpp" />
-    <ClCompile Include="SecondPart.cpp" />
-    <ClCompile Include="SecondPart.h" />
-    <ClCompile Include="ThirdPart.cpp" />
-    <ClCompile Include="ThirdPart.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ComplexFront.h" />

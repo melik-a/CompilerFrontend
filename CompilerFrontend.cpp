@@ -1,7 +1,7 @@
 ﻿
-#include "FirstPart.h"
-#include "SecondPart.h"
-#include "ThirdPart.h"
+#include <iostream>
+#include "ComplexFront.h"
+
 
 int main()
 {
@@ -12,7 +12,11 @@ int main()
 	short selection = 4;
 	std::string file;
 
-	while (selection != 42)
+	ComplexFront front;
+	front.code_to_ast("demo_for_lexer.txt");
+	front.draw_ast();
+
+	/*while (selection != 42)
 	{
 		file = "";
 
@@ -33,20 +37,20 @@ int main()
 		switch (selection)
 		{
 		case 1:
-			first_part();
+			
 			break;
 		case 2:
-			second_part();
+			
 			break;
 		case 3:
-			third_part();
+			
 			break;
 		case 0:
 			selection = 42;
 		}
 
 		std::cout << "<====================================================================================>" << std::endl;
-	}
+	}*/
 
 	std::cout << "\nbye, bye\n" << std::endl;
 

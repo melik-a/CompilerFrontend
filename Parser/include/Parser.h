@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 
 #include "SyntaxToken.h"
@@ -55,54 +54,44 @@
 	source code line - some_var := 0.9 * 10.5;
 	lexical analyzer output - <ID, some_var> <ASSIGN, := > <FLOAT_NUMBER, 0.9> <ARITHM_OPERATOR, * > <FLOAT_NUMBER, 10.5>
 	syntax analyzer output -				
-	
-	STMT
-	|
-	|-- ID
-	|-- ASSIGN
-	|__ EXPR
-		|-- TRANS
-		|    |-- FACTOR
-		|	 |	  |__ FLOAT_NUM
-		|	 |__ MUL_DIV
-		|		  |__ EPS
-		|__ ADD_SUB
-			 |-- TRANS
-			 |    |-- FACTOR
-			 |	  |	   |__ FLOAT_NUM
-			 |	  |__ MUL_DIV
-			 |		   |__ EPS
-			 |__ ADD_SUB
-	|__	SEPARATOR						
-
-							
+	|___ <STMT>
+		|--- <ID_TOKEN, some_var>
+		|--- <ASSIGN_TOKEN, :=>
+		|--- <EXPRESSION>
+		|    |___ <TRANS>
+		|        |--- <FACTOR>
+		|        |    |___ <FLOAT_NUMBER, 0.9>
+		|        |___ <MUL_DIV>
+		|            |--- <FLOAT_NUMBER, 0.9>
+		|            |___ <FACTOR>
+		|                |___ <FLOAT_NUMBER, 10.5>
+		|___ <SEMICOLON_TOKEN, ;>							
 */
 
 
 struct Parser
 {
-	bool get_lexems_from_file(std::string lex_file);
-	void parse();
+	Parser(std::vector<SyntaxToken>* lex_table, size_t lines) : _lexems(*lex_table), _lines(lines) {}
+
+	std::vector<AstNode*>* parse();
+
+	std::vector<SyntaxToken>* get_lexems();
 
 	private:
-		AstNode* _root;
-
-		std::vector<SyntaxToken> _lexems;
+		std::vector<SyntaxToken>& _lexems;
 		
 		int _current{};
 		int _lines{};
 
-		SyntaxToken peek_token(int pos);
+		SyntaxToken peek_token(size_t pos);
 		SyntaxToken current_token();
 		SyntaxToken next_token();
 		SyntaxToken lookahead();
 		
-
-		bool stmt();
+		bool stmt(AstNode* stmt_node);
 		bool expr(AstNode* expr_node);
 		bool add_sub(AstNode* add_sub_node);
 		bool trans(AstNode* trans_node);
 		bool mul_div(AstNode* mul_div_node);
 		bool factor(AstNode* factor_node);
-
 };

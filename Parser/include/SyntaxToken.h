@@ -10,8 +10,8 @@ struct SyntaxToken : AstNode
 	std::string lexeme;
 	SyntaxTag token_type;
 
-	int line;
-	int symbol_pos;
+	size_t line;
+	size_t symbol_pos;
 
 	SyntaxToken() = default;
 
@@ -21,7 +21,7 @@ struct SyntaxToken : AstNode
 	SyntaxToken(std::string lex, SyntaxTag lex_type)
 		: lexeme(lex), token_type(lex_type), line(), symbol_pos() {}
 
-	SyntaxToken(std::string lex, SyntaxTag lex_type, int f_line, int f_pos)
+	SyntaxToken(std::string lex, SyntaxTag lex_type, size_t f_line, size_t f_pos)
 		: lexeme(lex), token_type(lex_type), line(f_line), symbol_pos(f_pos) {}
 
 	std::string token_type_to_string()
