@@ -26,7 +26,7 @@ struct AstNode
 	}
 
 	AstTag _node_type;
-	std::string _value; // optional, possible can be use for evaluation
+	float _value; // optional, possible can be use for evaluation
 
 	private:
 		std::vector<AstNode*> _children;

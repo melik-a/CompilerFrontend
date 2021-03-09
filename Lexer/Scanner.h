@@ -19,11 +19,11 @@ struct LexicalScanner
 	size_t get_num_of_lines();
 
 	private:
-		std::ifstream _file;
-		States _current_state;
-		std::vector<SyntaxToken>* _lexeme_table;
+		static std::vector<SyntaxToken>* _lexeme_table;
 		size_t _line_counter{1};
 		size_t _symbol_pos_at_line{1};
+		static std::ifstream _file;
+		static States _current_state;
 
 		void start_state_changing(char symbol, std::string& lexeme);
 		void id_state_changing(char symbol, std::string& lexeme);
@@ -33,7 +33,7 @@ struct LexicalScanner
 		void arithm_operator_state_changing(char symbol, std::string& lexeme);
 		void comment_state_changing(char symbol, std::string& lexeme);
 
-		bool is_letter(char symbol);
-		bool is_digit(char symbol);
+		bool is_letter(char symbol) const;
+		bool is_digit(char symbol) const;
 };
 

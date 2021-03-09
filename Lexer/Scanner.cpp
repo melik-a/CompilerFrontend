@@ -7,7 +7,7 @@ LexicalScanner::LexicalScanner(std::string& file)
 	if (!_file)
 	{
 		std::cout << "\nsomething went wrong. invalid file name or path" << std::endl;
-		throw "error -> invalid file name or path";
+		throw std::runtime_error("invalid file name or path");
 	}
 	_current_state = States::START;
 	_lexeme_table = new std::vector<SyntaxToken>();
@@ -59,7 +59,7 @@ std::vector<SyntaxToken>* LexicalScanner::scan()
 				std::cout << "ERROR state with error -> " << lexeme << std::endl;
 				if (_file.is_open())
 					_file.close();
-				throw "error in the source file";
+				throw std::exception("lexer in ERROR state");
 				break;
 		}
 	}
@@ -350,7 +350,7 @@ void LexicalScanner::comment_state_changing(char symbol, std::string& lexeme)
 }
 
 
-bool LexicalScanner::is_digit(char symbol)
+bool LexicalScanner::is_digit(char symbol) const
 {
 	if (symbol >= '0' && symbol <= '9')
 		return true;
@@ -358,7 +358,7 @@ bool LexicalScanner::is_digit(char symbol)
 }
 
 
-bool LexicalScanner::is_letter(char symbol)
+bool LexicalScanner::is_letter(char symbol) const
 {
 	if ((symbol >= 'a' && symbol <= 'z') || (symbol >= 'A' && symbol <= 'Z') || symbol == '_')
 		return true;

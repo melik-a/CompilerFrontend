@@ -4,8 +4,7 @@
 
 int main()
 {
-	setlocale(LC_ALL, "rus");
-	
+	system("chcp 1251");
 	std::cout << " -> front part of simple compiler." << std::endl;
 	short selection = 4;
 	std::string file;
@@ -35,6 +34,7 @@ int main()
 			std::cout << "\ninput the path to file {C:\\TEMP\\example.txt} -> ";
 			std::cin >> file;
 			std::cout << file << std::endl;
+			//file = "C:\\Users\\Админ\\Desktop\\education\\sems\\7\\СПО\\course_work\\CompilerFrontend\\CompilerFrontend\\demo.txt";
 			try
 			{
 				ComplexFront front;

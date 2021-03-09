@@ -1,8 +1,7 @@
 #include "../include/Parser.h"
 
 
-
-SyntaxToken Parser::peek_token(size_t pos)
+SyntaxToken Parser::peek_token(size_t pos) const
 {
 	size_t last = _lexems.size() - 1;
 	if (pos <= last)
@@ -10,24 +9,27 @@ SyntaxToken Parser::peek_token(size_t pos)
 	return _lexems[pos];
 }
 
-SyntaxToken Parser::current_token()
+SyntaxToken Parser::current_token() const
 {
 	return _lexems[_current];
 }
 
 SyntaxToken Parser::next_token()
 {
+	if (_current + 1 >= _lexems.size())
+		return _lexems[_current];
 	return _lexems[++_current];
 }
 
-SyntaxToken Parser::lookahead()
+SyntaxToken Parser::lookahead() const
 {
-	int ahead = _current + 1;
-	return _lexems[ahead];
+	if (_current + 1 >= _lexems.size())
+		return _lexems[_current];
+	return _lexems[_current + 1];
 }
 
 
-std::vector<AstNode*>* Parser::parse(HashMap<std::string, std::string>& symbol_table)
+std::vector<AstNode*>* Parser::parse(HashMap<std::string, float>& symbol_table)
 {
 	std::vector<AstNode*>* ast_trees = new std::vector<AstNode*>;
 	for (int i = 0; i < _lines; i++)
@@ -45,13 +47,13 @@ std::vector<SyntaxToken>* Parser::get_lexems()
 }
 
 
-bool Parser::stmt(AstNode* stmt_node, HashMap<std::string, std::string>& symbol_table)
+bool Parser::stmt(AstNode* stmt_node, HashMap<std::string, float>& symbol_table)
 {
 	// STMT -> ID := EXPR;
 	if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
 		if (symbol_table.search_pair(current_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, "float");
+			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		stmt_node->add_child(new SyntaxToken(current_token()));
 		if (next_token().token_type == SyntaxTag::ASSIGN_TOKEN)
 		{
@@ -79,7 +81,7 @@ bool Parser::stmt(AstNode* stmt_node, HashMap<std::string, std::string>& symbol_
 	return false;
 }
 
-bool Parser::expr(AstNode* expr_node, HashMap<std::string, std::string>& symbol_table)
+bool Parser::expr(AstNode* expr_node, HashMap<std::string, float>& symbol_table)
 {
 	// EXPR -> TRANS ADD_SUB
 	AstNode* trans_node = new AstNode(AstTag::TRANS);
@@ -94,7 +96,7 @@ bool Parser::expr(AstNode* expr_node, HashMap<std::string, std::string>& symbol_
 	return false;
 }
 
-bool Parser::add_sub(AstNode* add_sub_node, HashMap<std::string, std::string>& symbol_table)
+bool Parser::add_sub(AstNode* add_sub_node, HashMap<std::string, float>& symbol_table)
 {
 	// ADD_SUB -> + TRANS ADD_SUB
 	SyntaxToken word = lookahead();
@@ -115,7 +117,7 @@ bool Parser::add_sub(AstNode* add_sub_node, HashMap<std::string, std::string>& s
 	return false;
 }
 
-bool Parser::trans(AstNode* trans_node, HashMap<std::string, std::string>& symbol_table)
+bool Parser::trans(AstNode* trans_node, HashMap<std::string, float>& symbol_table)
 {
 	// TRANS -> FACTOR MUL_DIV
 	AstNode* factor_node = new AstNode(AstTag::FACTOR);
@@ -130,7 +132,7 @@ bool Parser::trans(AstNode* trans_node, HashMap<std::string, std::string>& symbo
 	return false;
 }
 
-bool Parser::mul_div(AstNode* mul_div_node, HashMap<std::string, std::string>& symbol_table)
+bool Parser::mul_div(AstNode* mul_div_node, HashMap<std::string, float>& symbol_table)
 {
 	// MUL_DIV -> FACTOR MUL_DIV
 	SyntaxToken word = lookahead();
@@ -151,7 +153,7 @@ bool Parser::mul_div(AstNode* mul_div_node, HashMap<std::string, std::string>& s
 	return false;
 }
 
-bool Parser::factor(AstNode* factor_node, HashMap<std::string, std::string>& symbol_table)
+bool Parser::factor(AstNode* factor_node, HashMap<std::string, float>& symbol_table)
 {
 	// FACTOR -> ( EXPR ) | FLOAT_NUM | ID_TOKEN
 	if (next_token().token_type == SyntaxTag::LP_TOKEN)
@@ -176,7 +178,7 @@ bool Parser::factor(AstNode* factor_node, HashMap<std::string, std::string>& sym
 	else if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
 		if (symbol_table.search_pair(current_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, "float");
+			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
 	}

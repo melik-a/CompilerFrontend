@@ -11,16 +11,7 @@
 
 struct ComplexFront
 {
-	~ComplexFront()
-	{
-		for (auto& el : *_parsed_ast)
-		{
-			if (el)
-				delete el;
-		}
-		delete _parsed_ast;
-		delete _lexems;
-	}
+	~ComplexFront();
 
 	void front_compile(std::string file);
 	void draw_all_trees();
@@ -29,7 +20,7 @@ struct ComplexFront
 	void print_line_and_tree();
 
 	private:
-		std::vector<AstNode*>* _parsed_ast;
-		std::vector<SyntaxToken>* _lexems;
-		HashMap<std::string, std::string> _symbol_table;
+		std::vector<AstNode*>* _parsed_ast { nullptr };
+		std::vector<SyntaxToken>* _lexems { nullptr };
+		HashMap<std::string, float>* _symbol_table { nullptr };
 };

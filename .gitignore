@@ -3,4 +3,5 @@ Debug/
 *.vcxproj.*
 *.sln
 *.obj
+*.vscode/
 SymbolTable/Debug

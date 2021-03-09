@@ -75,26 +75,25 @@ struct Parser
 {
 	Parser(std::vector<SyntaxToken>* lex_table, size_t lines) : _lexems(*lex_table), _lines(lines) {}
 
-	std::vector<AstNode*>* parse(HashMap<std::string, std::string>& symbol_table);
+	std::vector<AstNode*>* parse(HashMap<std::string, float>& symbol_table);
 
 	std::vector<SyntaxToken>* get_lexems();
 
 	private:
 		std::vector<SyntaxToken>& _lexems;
-		//HashMap<std::string, std::string>* _symbol_table;
 
 		int _current{};
 		int _lines{};
 
-		SyntaxToken peek_token(size_t pos);
-		SyntaxToken current_token();
+		SyntaxToken peek_token(size_t pos) const;
+		SyntaxToken current_token() const;
 		SyntaxToken next_token();
-		SyntaxToken lookahead();
+		SyntaxToken lookahead() const;
 		
-		bool stmt(AstNode* stmt_node, HashMap<std::string, std::string>& symbol_table);
-		bool expr(AstNode* expr_node, HashMap<std::string, std::string>& symbol_table);
-		bool add_sub(AstNode* add_sub_node, HashMap<std::string, std::string>& symbol_table);
-		bool trans(AstNode* trans_node, HashMap<std::string, std::string>& symbol_table);
-		bool mul_div(AstNode* mul_div_node, HashMap<std::string, std::string>& symbol_table);
-		bool factor(AstNode* factor_node, HashMap<std::string, std::string>& symbol_table);
+		bool stmt(AstNode* stmt_node, HashMap<std::string, float>& symbol_table);
+		bool expr(AstNode* expr_node, HashMap<std::string, float>& symbol_table);
+		bool add_sub(AstNode* add_sub_node, HashMap<std::string, float>& symbol_table);
+		bool trans(AstNode* trans_node, HashMap<std::string, float>& symbol_table);
+		bool mul_div(AstNode* mul_div_node, HashMap<std::string, float>& symbol_table);
+		bool factor(AstNode* factor_node, HashMap<std::string, float>& symbol_table);
 };

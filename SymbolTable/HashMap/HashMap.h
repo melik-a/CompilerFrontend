@@ -2,16 +2,17 @@
 
 #include <iostream>
 #include "Hash.h"
-#include "Pair.h"
+#include "Identifier.h"
 #include <cassert>
 
 /***  
  *** simple implementation of hash table
  *** template arguments: K - type of storage key,
  ***					 V - type of storage value,
+ ***					 D - type of datatype of id,
  ***					 H - hash function (by dedault used Hash<K>{})
  *** 
- *** implementation provides some general methods: insert, remove, search, upgrade, resize and etc.
+ *** implementation provides some general methods: insert, remove, search, update, resize and etc.
  *** 
  *** to use this hash table implementaion with some non-trivial structures
  *** need to transfer as a template argument some hash functions that can provide hashing this structure.
@@ -20,20 +21,23 @@
  *** 
  ***/
 
-template <typename K, typename V, typename H = Hash<K>>
+template <typename K, typename V, typename D = SyntaxTag, typename H = Hash<K>>
 struct HashMap
 {
 	HashMap() : 
-		_size(_default_size), _mass(new Pair<K, V>* [_size] { nullptr }) {}
+		_size(_default_size), _mass(new Identifier<K, V, D>* [_size] { nullptr }) {}
 	
 	HashMap(size_t size) :
-		_size(size), _mass(new Pair<K, V>* [_size] { nullptr }) {}
+		_size(size), _mass(new Identifier<K, V, D>* [_size] { nullptr }) {}
 
 	~HashMap()
 	{
-		for (size_t i = 0; i < _size; i++)
-			delete _mass[i];
-		delete _mass;
+		if (_mass)
+		{
+			for (size_t i = 0; i < _size; i++)
+				delete _mass[i];
+			delete _mass;
+		}
 	}
 	
 	bool is_empty() const;
@@ -46,12 +50,12 @@ struct HashMap
 	void print_all_keys() const;
 	void print_all_values() const;
 
-	Pair<K, V>* const* get_pairs() const;
+	Identifier<K, V, D>* const* get_pairs() const;
 
-	bool insert(const K& key, const V& value);
-	bool insert(K&& key, V&& value);
-	bool insert(Pair<K, V>&& new_pair);
-	bool insert(const Pair<K, V>& new_pair);
+	bool insert(const K& key, const V& value, const D& type);
+	bool insert(K&& key, V&& value, D&& type);
+	bool insert(Identifier<K, V, D>&& new_pair);
+	bool insert(const Identifier<K, V, D>& new_pair);
 
 	size_t search_pair(const K& key);
 	size_t search_pair(K&& key);
@@ -59,16 +63,16 @@ struct HashMap
 	bool remove_pair(const K& key);
 	bool remove_pair(K&& key);
 
-	bool upgrade(const K& key, V&& value);
-	bool upgrade(K&& key, V&& value);
+	bool update(const K& key, V&& value);
+	bool update(K&& key, V&& value);
 
 	size_t get_number_of_entries() const;
 	size_t get_size() const;
 	size_t get_last_number_of_comparisons() const;
 
-	const Pair<K, V>* operator[](const size_t& index) const;
-	const Pair<K, V>* operator[](const K& key);
-	const Pair<K, V>* operator[](K&& key);
+	const Identifier<K, V, D>* operator[](const size_t& index) const;
+	const Identifier<K, V, D>* operator[](const K& key);
+	const Identifier<K, V, D>* operator[](K&& key);
 
 	private:
 		static constexpr size_t _default_size = 200;
@@ -76,7 +80,7 @@ struct HashMap
 		static constexpr short _growth_factor = 2;
 
 		size_t _size;
-		Pair<K, V> **_mass;
+		Identifier<K, V, D> **_mass;
 		H _hash{};
 		size_t _number_of_entries{};
 		size_t _last_num_comparisons{};
@@ -85,17 +89,17 @@ struct HashMap
 };
 
 
-template <typename K, typename V, typename H>
-std::ostream& operator << (std::ostream& os, const HashMap<K, V, H>& table)
+template <typename K, typename V, typename D, typename H>
+std::ostream& operator << (std::ostream& os, const HashMap<K, V, D, H>& table)
 {
 	os << "\n{ ";
 	size_t size = table.get_size();
 	for (size_t i = 0; i < size; i++)
 	{
 		if (table[i])
-			os << table[i]->_first << " : " << table[i]->_second;
+			os << table[i]->_key << " : " << table[i]->_value << " : " << table[i]->_datatype;
 		else
-			os << " : ";
+			os << " : : ";
 		
 		if (i < size - 1)
 			std::cout << ", ";
@@ -105,88 +109,88 @@ std::ostream& operator << (std::ostream& os, const HashMap<K, V, H>& table)
 }
 
 
-template <typename K, typename V, typename H>
-const Pair<K, V>* HashMap<K, V, H>::operator[](const size_t& index) const
+template <typename K, typename V, typename D, typename H>
+const Identifier<K, V, D>* HashMap<K, V, D, H>::operator[](const size_t& index) const
 {
 	assert(index < _size);
 	return _mass[index];
 }
 
 
-template <typename K, typename V, typename H>
-const Pair<K, V>* HashMap<K, V, H>::operator[](const K& key)
+template <typename K, typename V, typename D, typename H>
+const Identifier<K, V, D>* HashMap<K, V, D, H>::operator[](const K& key)
 {
 	size_t index = search_pair(key);
 	return index == get_size() ? nullptr : _mass[index];
 }
 
 
-template <typename K, typename V, typename H>
-const Pair<K, V>* HashMap<K, V, H>::operator[](K&& key)
+template <typename K, typename V, typename D, typename H>
+const Identifier<K, V, D>* HashMap<K, V, D, H>::operator[](K&& key)
 {
 	size_t index = this->search_pair(std::move(key));
 	return index == get_size() ? nullptr : _mass[index];
 }
 
 
-template <typename K, typename V, typename H>
-size_t HashMap<K, V, H>::get_number_of_entries() const
+template <typename K, typename V, typename D, typename H>
+size_t HashMap<K, V, D, H>::get_number_of_entries() const
 {
 	return _number_of_entries;
 }
 
 
-template <typename K, typename V, typename H>
-size_t HashMap<K, V, H>::get_size() const
+template <typename K, typename V, typename D, typename H>
+size_t HashMap<K, V, D, H>::get_size() const
 {
 	return _size;
 }
 
 
-template <typename K, typename V, typename H>
-size_t HashMap<K, V, H>::get_last_number_of_comparisons() const
+template <typename K, typename V, typename D, typename H>
+size_t HashMap<K, V, D, H>::get_last_number_of_comparisons() const
 {
 	return _last_num_comparisons;
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::is_empty() const
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::is_empty() const
 {
 	return _number_of_entries ? false : true;
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::is_full() const
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::is_full() const
 {
 	return _number_of_entries == _size ? true : false;
 }
 
 
-template <typename K, typename V, typename H>
-double HashMap<K, V, H>::load_factor() const
+template <typename K, typename V, typename D, typename H>
+double HashMap<K, V, D, H>::load_factor() const
 {
 	return (double)_number_of_entries / _size;
 }
 
 
-template <typename K, typename V, typename H>
-double HashMap<K, V, H>::load_factor_threshold() const
+template <typename K, typename V, typename D, typename H>
+double HashMap<K, V, D, H>::load_factor_threshold() const
 {
 	return _load_factor_threshold;
 }
 
 
-template <typename K, typename V, typename H>
-size_t HashMap<K, V, H>::default_size() const
+template <typename K, typename V, typename D, typename H>
+size_t HashMap<K, V, D, H>::default_size() const
 {
 	return _default_size;
 }
 
 
-template <typename K, typename V, typename H>
-void HashMap<K, V, H>::print_all_entries() const
+template <typename K, typename V, typename D, typename H>
+void HashMap<K, V, D, H>::print_all_entries() const
 {
 	if (is_empty())
 	{
@@ -198,7 +202,8 @@ void HashMap<K, V, H>::print_all_entries() const
 	{
 		if (_mass[i])
 		{
-			std::cout << "{ " << _mass[i]->_first << " : " << _mass[i]->_second << " }";
+			std::cout << "{ " << _mass[i]->_key << " : " << _mass[i]->_value
+												<< " : " << _mass[i]->_value << " }";
 			if (i < _size - 1)
 				std::cout << " ";
 		}
@@ -207,8 +212,8 @@ void HashMap<K, V, H>::print_all_entries() const
 }
 
 
-template <typename K, typename V, typename H>
-void HashMap<K, V, H>::print_all_keys() const
+template <typename K, typename V, typename D, typename H>
+void HashMap<K, V, D, H>::print_all_keys() const
 {
 	if (is_empty()) 
 	{
@@ -219,7 +224,7 @@ void HashMap<K, V, H>::print_all_keys() const
 	for (size_t i = 0; i < _size; i++)
 	{
 		if (_mass[i])
-			std::cout << _mass[i]->_first;
+			std::cout << _mass[i]->_key;
 		else
 			std::cout << "nullptr";
 
@@ -230,8 +235,8 @@ void HashMap<K, V, H>::print_all_keys() const
 }
 
 
-template <typename K, typename V, typename H>
-void HashMap<K, V, H>::print_all_values() const
+template <typename K, typename V, typename D, typename H>
+void HashMap<K, V, D, H>::print_all_values() const
 {
 	if (is_empty())
 	{
@@ -242,7 +247,7 @@ void HashMap<K, V, H>::print_all_values() const
 	for (size_t i = 0; i < _size; i++)
 	{
 		if (_mass[i])
-			std::cout << _mass[i]->_second;
+			std::cout << _mass[i]->_value;
 		else
 			std::cout << "nullptr";
 		
@@ -253,15 +258,15 @@ void HashMap<K, V, H>::print_all_values() const
 }
 
 
-template <typename K, typename V, typename H>
-Pair<K, V>* const* HashMap<K, V, H>::get_pairs() const
+template <typename K, typename V, typename D, typename H>
+Identifier<K, V, D>* const* HashMap<K, V, D, H>::get_pairs() const
 {
 	return _mass;
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::insert(const K& key, const V& value)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::insert(const K& key, const V& value, const D& type)
 {
 	if (_load_factor_threshold < load_factor())
 		resize_table();
@@ -278,7 +283,7 @@ bool HashMap<K, V, H>::insert(const K& key, const V& value)
 	_last_num_comparisons++;
 	if (!_mass[index])
 	{
-		_mass[index] = new Pair<K, V> (key, value);
+		_mass[index] = new Identifier<K, V, D> (key, value, type);
 		_number_of_entries++;
 		return true;
 	}
@@ -286,8 +291,8 @@ bool HashMap<K, V, H>::insert(const K& key, const V& value)
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::insert(K&& key, V&& value)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::insert(K&& key, V&& value, D&& type)
 {
 	if (_load_factor_threshold < load_factor())
 		resize_table();
@@ -304,7 +309,7 @@ bool HashMap<K, V, H>::insert(K&& key, V&& value)
 	_last_num_comparisons++;
 	if (!_mass[index])
 	{
-		_mass[index] = new Pair<K, V>(std::move(key), std::move(value));
+		_mass[index] = new Identifier<K, V, D>(std::move(key), std::move(value), std::move(type));
 		_number_of_entries++;
 		return true;
 	}
@@ -312,25 +317,25 @@ bool HashMap<K, V, H>::insert(K&& key, V&& value)
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::insert(Pair<K, V>&& new_pair)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::insert(Identifier<K, V, D>&& new_id)
 {
 	if (_load_factor_threshold < load_factor())
 		resize_table();
 
 	_last_num_comparisons = 0;
 
-	size_t index = _hash(std::move(new_pair._first)) % _size;
+	size_t index = _hash(std::move(new_id._key)) % _size;
 	for (size_t i = 1; (i < _size) && (_mass[index]); i++)
 	{
-		index = (_hash(std::move(new_pair._first)) + i) % _size;
+		index = (_hash(std::move(new_id._key)) + i) % _size;
 		_last_num_comparisons++;
 	}
 
 	_last_num_comparisons++;
 	if (!_mass[index])
 	{
-		_mass[index] = new Pair<K, V>(std::move(new_pair));		
+		_mass[index] = new Identifier<K, V, D>(std::move(new_id));		
 		_number_of_entries++;
 		return true;
 	}
@@ -338,25 +343,25 @@ bool HashMap<K, V, H>::insert(Pair<K, V>&& new_pair)
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::insert(const Pair<K, V>& new_pair)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::insert(const Identifier<K, V, D>& new_id)
 {
 	if (_load_factor_threshold < load_factor())
 		resize_table();
 
 	_last_num_comparisons = 0;
 
-	size_t index = _hash(new_pair._first) % _size;
+	size_t index = _hash(new_id._key) % _size;
 	for (size_t i = 1; (i < _size) && (_mass[index]); i++)
 	{
-		index = (_hash(new_pair._first) + i) % _size;
+		index = (_hash(new_id._key) + i) % _size;
 		_last_num_comparisons++;
 	}
 
 	_last_num_comparisons++;
 	if (!_mass[index])
 	{
-		_mass[index] = new Pair<K, V>(new_pair);
+		_mass[index] = new Identifier<K, V, D>(new_id);
 		_number_of_entries++;
 		return true;
 	}
@@ -364,20 +369,20 @@ bool HashMap<K, V, H>::insert(const Pair<K, V>& new_pair)
 }
 
 
-template <typename K, typename V, typename H>
-size_t HashMap<K, V, H>::search_pair(const K& key)
+template <typename K, typename V, typename D, typename H>
+size_t HashMap<K, V, D, H>::search_pair(const K& key)
 {
 	_last_num_comparisons = 0;
 
 	size_t index = _hash(key) % _size;
 
 	// if elem is empty -> didn't find elem, else check keys on equal
-	bool find = (!_mass[index] ? false : _mass[index]->_first == key);
+	bool find = (!_mass[index] ? false : _mass[index]->_key == key);
 	for (size_t i = 1; (i < _size) && (!find); i++)
 	{
 		index = (_hash(key) + i) % _size;
 		_last_num_comparisons++;
-		find = (!_mass[index] ? false : _mass[index]->_first == key);
+		find = (!_mass[index] ? false : _mass[index]->_key == key);
 	}
 
 	_last_num_comparisons++;
@@ -387,29 +392,21 @@ size_t HashMap<K, V, H>::search_pair(const K& key)
 }
 
 
-template <typename K, typename V, typename H>
-size_t HashMap<K, V, H>::search_pair(K&& key)
+template <typename K, typename V, typename D, typename H>
+size_t HashMap<K, V, D, H>::search_pair(K&& key)
 {
 	_last_num_comparisons = 0;
 
 	size_t index = _hash(std::move(key)) % _size;
 
 	// if elem is empty -> didn't find elem, else check keys on equal
-	bool find = (!_mass[index] ? false : _mass[index]->_first == key);
+	bool find = (!_mass[index] ? false : _mass[index]->_key == key);
 	for (size_t i = 1; (i < _size) && (!find); i++)
 	{
 		index = (_hash(std::move(key)) + i) % _size;
 		_last_num_comparisons++;
-		find = (!_mass[index] ? false : _mass[index]->_first == key);
+		find = (!_mass[index] ? false : _mass[index]->_key == key);
 	}
-	// equivalent search
-	/*size_t i{0};
-	while (!find) {
-		index = simple_rehash(key, i);
-		_last_num_comparisons++;
-		find = (_mass[index] ? false : _mass[index]->_first == key);
-		i++;
-	}*/
 
 	_last_num_comparisons++;
 	if (find)
@@ -418,8 +415,8 @@ size_t HashMap<K, V, H>::search_pair(K&& key)
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::remove_pair(const K& key)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::remove_pair(const K& key)
 {
 	size_t index = search_pair(key);
 	if (index != _size)
@@ -432,8 +429,8 @@ bool HashMap<K, V, H>::remove_pair(const K& key)
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::remove_pair(K&& key)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::remove_pair(K&& key)
 {
 	size_t index = search_pair(std::move(key));
 	if (index != _size)
@@ -446,19 +443,19 @@ bool HashMap<K, V, H>::remove_pair(K&& key)
 }
 
 
-template <typename K, typename V, typename H>
-void HashMap<K, V, H>::resize_table()
+template <typename K, typename V, typename D, typename H>
+void HashMap<K, V, D, H>::resize_table()
 {
 	size_t new_size = _size * _growth_factor;
-	Pair<K, V> **new_mass = new Pair<K, V>*[new_size] { nullptr };
+	Identifier<K, V, D> **new_mass = new Identifier<K, V, D>*[new_size] { nullptr };
 	size_t index{};
 	Hash<K> new_hash{};
 	for (size_t i = 0; i < _size; i++)
 	{
 		if (_mass[i])
 		{
-			index = new_hash(_mass[i]->_first) % new_size;
-			new_mass[index] = new Pair<K, V>(_mass[i]->_first,_mass[i]->_second);
+			index = new_hash(_mass[i]->_key) % new_size;
+			new_mass[index] = new Identifier<K, V, D>(_mass[i]->_key,_mass[i]->_value, _mass[i]->_datatype);
 		}
 		delete _mass[i];
 	}
@@ -468,26 +465,26 @@ void HashMap<K, V, H>::resize_table()
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::upgrade(const K& key, V&& value)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::update(const K& key, V&& value)
 {
 	size_t exist_pair = search_pair(key);
 	if (exist_pair != _size)
 	{
-		_mass[exist_pair]->_second = std::move(value);
+		_mass[exist_pair]->_value = std::move(value);
 		return true;
 	}
 	return false;
 }
 
 
-template <typename K, typename V, typename H>
-bool HashMap<K, V, H>::upgrade(K&& key, V&& value)
+template <typename K, typename V, typename D, typename H>
+bool HashMap<K, V, D, H>::update(K&& key, V&& value)
 {
 	size_t exist_pair = search_pair(std::move(key));
 	if (exist_pair != _size)
 	{
-		_mass[exist_pair]->_second = std::move(value);
+		_mass[exist_pair]->_value = std::move(value);
 		return true;
 	}
 	return false;
