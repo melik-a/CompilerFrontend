@@ -1,14 +1,21 @@
 ﻿#include <iostream>
 #include "ComplexFront.h"
-
+#include <Windows.h>
+#include <io.h>
+#include <fcntl.h>
+/**
+*** to do:	add error handling, add evaluating, add id declaration,
+***			rework some classes to provide little bit oop design,
+***			rework main() - imagine some useful functionality.
+***
+**/
 
 int main()
 {
 	system("chcp 1251");
-	std::cout << " -> front part of simple compiler." << std::endl;
+	std::wcout << " -> front part of simple compiler." << std::endl;
 	short selection = 4;
 	std::string file;
-
 
 	while (selection != 42)
 	{
@@ -16,7 +23,7 @@ int main()
 
 		std::cout << "\nyour turn to pick:\n"
 			<< "\t1. front compile from the source code file.\n"
-			<< "\t2. console input front compile .\n"
+			<< "\t2. console input front compile.\n"
 			<< "\t3. demonstration.\n"
 			<< "\t0. exit" << std::endl;
 		std::cout << "\nyour pick -> ";
@@ -27,14 +34,15 @@ int main()
 			std::cin.ignore(std::cin.rdbuf()->in_avail());
 			continue;
 		}
-		
+		//std::locale loc(setlocale(LC_ALL, ""));
 		switch (selection)
 		{
 		case 1:
 			std::cout << "\ninput the path to file {C:\\TEMP\\example.txt} -> ";
+			
+			//std::cin.imbue(loc);
 			std::cin >> file;
 			std::cout << file << std::endl;
-			//file = "C:\\Users\\Админ\\Desktop\\education\\sems\\7\\СПО\\course_work\\CompilerFrontend\\CompilerFrontend\\demo.txt";
 			try
 			{
 				ComplexFront front;

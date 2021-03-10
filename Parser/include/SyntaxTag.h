@@ -1,5 +1,5 @@
 #pragma once
-
+#include <iostream>
 enum class SyntaxTag
 {
 	ID_TOKEN,
@@ -19,3 +19,5 @@ enum class SyntaxTag
 	END_OF_FILE,
 	UNKNOWN_TOKEN
 };
+
+std::ostream& operator<<(std::ostream& os, const SyntaxTag& tag);

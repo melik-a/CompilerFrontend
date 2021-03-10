@@ -82,8 +82,8 @@ struct Parser
 	private:
 		std::vector<SyntaxToken>& _lexems;
 
-		int _current{};
-		int _lines{};
+		size_t _current{};
+		size_t _lines{};
 
 		SyntaxToken peek_token(size_t pos) const;
 		SyntaxToken current_token() const;

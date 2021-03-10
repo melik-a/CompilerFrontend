@@ -5,6 +5,8 @@
 #include "AstNode.h"
 #include "SyntaxTag.h"
 
+
+
 struct SyntaxToken : AstNode
 {
 	std::string lexeme;
@@ -24,50 +26,9 @@ struct SyntaxToken : AstNode
 	SyntaxToken(std::string lex, SyntaxTag lex_type, size_t f_line, size_t f_pos)
 		: lexeme(lex), token_type(lex_type), line(f_line), symbol_pos(f_pos) {}
 
-	std::string token_type_to_string()
-	{
-		switch (token_type)
-		{
-		case SyntaxTag::END_OF_FILE:
-			return "END_OF_FILE";
-			break;
-		case SyntaxTag::ID_TOKEN:
-			return "ID_TOKEN";
-			break;
-		case SyntaxTag::ASSIGN_TOKEN:
-			return "ASSIGN_TOKEN";
-			break;
-		case SyntaxTag::LP_TOKEN:
-			return "LP_TOKEN";
-			break;
-		case SyntaxTag::RP_TOKEN:
-			return "RP_TOKEN";
-			break;
-		case SyntaxTag::PLUS_TOKEN:
-			return "PLUS_TOKEN";
-			break;
-		case SyntaxTag::MINUS_TOKEN:
-			return "MINUS_TOKEN";
-			break;
-		case SyntaxTag::STAR_TOKEN:
-			return "STAR_TOKEN";
-			break;
-		case SyntaxTag::SLASH_TOKEN:
-			return "SLASH_TOKEN";
-			break;
-		case SyntaxTag::FLOAT_NUMBER:
-			return "FLOAT_NUMBER";
-			break;
-		case SyntaxTag::SEMICOLON_TOKEN:
-			return "SEMICOLON_TOKEN";
-			break;
-		}
-		return "UNKNOWN_TOKEN";
-	}
-
 	void print_node() override
 	{
-		std::cout << " <" << token_type_to_string() << ", " << lexeme << "> ";
+		std::cout << " <" << token_type << ", " << lexeme << "> ";
 	}
 
 };

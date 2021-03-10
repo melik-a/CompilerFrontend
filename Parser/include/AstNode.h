@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "AstTag.h"
+#include "SyntaxTag.h"
 
 
 struct AstNode
@@ -18,7 +19,7 @@ struct AstNode
 	AstNode* get_child(int index);
 	int num_of_children();
 	std::string node_type_to_string();
-	std::string get_value();
+	float get_value();
 
 	virtual void print_node()
 	{

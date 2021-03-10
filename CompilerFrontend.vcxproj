@@ -30,6 +30,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -155,6 +156,7 @@
     <ClCompile Include="Lexer\Scanner.cpp" />
     <ClCompile Include="Parser\ast_parser\AstNode.cpp" />
     <ClCompile Include="Parser\ast_parser\Parser.cpp" />
+    <ClCompile Include="Parser\ast_parser\SyntaxTag.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ComplexFront.h" />
@@ -168,6 +170,7 @@
     <ClInclude Include="Parser\include\SyntaxToken.h" />
     <ClInclude Include="SymbolTable\HashMap\Hash.h" />
     <ClInclude Include="SymbolTable\HashMap\HashMap.h" />
+    <ClInclude Include="SymbolTable\HashMap\Identifier.h" />
     <ClInclude Include="SymbolTable\HashMap\Pair.h" />
     <ClInclude Include="SymbolTable\List\ListTable.h" />
     <ClInclude Include="SymbolTable\List\Node.h" />

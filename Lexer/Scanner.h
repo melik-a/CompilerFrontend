@@ -19,11 +19,11 @@ struct LexicalScanner
 	size_t get_num_of_lines();
 
 	private:
-		static std::vector<SyntaxToken>* _lexeme_table;
+		std::vector<SyntaxToken>* _lexeme_table;
 		size_t _line_counter{1};
 		size_t _symbol_pos_at_line{1};
-		static std::ifstream _file;
-		static States _current_state;
+		std::ifstream _file;
+		States _current_state;
 
 		void start_state_changing(char symbol, std::string& lexeme);
 		void id_state_changing(char symbol, std::string& lexeme);

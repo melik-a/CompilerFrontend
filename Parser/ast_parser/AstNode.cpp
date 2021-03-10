@@ -21,7 +21,7 @@ AstNode::~AstNode()
 }
 
 
-std::string AstNode::get_value()
+float AstNode::get_value()
 {
 	return _value;
 }

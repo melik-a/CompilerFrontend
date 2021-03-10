@@ -32,7 +32,7 @@ SyntaxToken Parser::lookahead() const
 std::vector<AstNode*>* Parser::parse(HashMap<std::string, float>& symbol_table)
 {
 	std::vector<AstNode*>* ast_trees = new std::vector<AstNode*>;
-	for (int i = 0; i < _lines; i++)
+	for (size_t i = 0; i < _lines; i++)
 	{
 		ast_trees->push_back(new AstNode(AstTag::STMT));
 		stmt(ast_trees->at(i), symbol_table);
@@ -52,7 +52,7 @@ bool Parser::stmt(AstNode* stmt_node, HashMap<std::string, float>& symbol_table)
 	// STMT -> ID := EXPR;
 	if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
-		if (symbol_table.search_pair(current_token().lexeme) == symbol_table.get_size())
+		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
 			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		stmt_node->add_child(new SyntaxToken(current_token()));
 		if (next_token().token_type == SyntaxTag::ASSIGN_TOKEN)
@@ -177,7 +177,7 @@ bool Parser::factor(AstNode* factor_node, HashMap<std::string, float>& symbol_ta
 	}
 	else if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
-		if (symbol_table.search_pair(current_token().lexeme) == symbol_table.get_size())
+		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
 			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;

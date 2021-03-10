@@ -11,7 +11,7 @@ struct Identifier
 	Identifier() : 
 		_key(), _value(), _datatype(SyntaxTag::FLOAT_NUMBER) {}
 
-	Identifier(const F& keyt, const S& value, const T& type) :
+	Identifier(const F& key, const S& value, const T& type) :
 		_key(key), _value(value), _datatype(type) {}
 
 	Identifier(const Identifier<F, S, T>& id_el) : 
