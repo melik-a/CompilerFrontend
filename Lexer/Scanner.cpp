@@ -21,7 +21,7 @@ LexicalScanner::~LexicalScanner()
 }
 
 
-std::vector<SyntaxToken>* LexicalScanner::scan()
+std::vector<SyntaxToken>* LexicalScanner::scan(std::vector<Error>& error_list)
 {
 	_lexeme_table->clear();
 	std::string lexeme = "";
@@ -56,14 +56,14 @@ std::vector<SyntaxToken>* LexicalScanner::scan()
 				comment_state_changing(curr_symbol, lexeme);
 				break;
 			case States::ERROR:
-				std::cout << "ERROR state with error -> " << lexeme << std::endl;
-				if (_file.is_open())
-					_file.close();
-				throw std::exception("lexer in ERROR state");
+				error_list.push_back(Error("current file", _error_level,
+					ErrorTag::LEXICAL_ERROR,
+					"lexer can't recognize character as an input language character. " + lexeme,
+					_line_counter, _symbol_pos_at_line));
+				_current_state = States::START;
 				break;
 		}
 	}
-
 	if (_file.is_open())
 		_file.close();
 	_lexeme_table->push_back(SyntaxToken{ "", SyntaxTag::END_OF_FILE, 
@@ -114,7 +114,7 @@ void LexicalScanner::start_state_changing(char symbol, std::string& lexeme)
 	}
 	else
 	{
-		lexeme = "lexical scanner can't move from the starting point. maybe something wrong with source file";
+		lexeme = "";
 		_current_state = States::ERROR;
 	}
 }
@@ -344,7 +344,7 @@ void LexicalScanner::comment_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == '\n')
 	{
-		lexeme = "not closed comment lexem";
+		lexeme = "not closed comment lexeme";
 		_current_state = States::ERROR;
 	}
 }

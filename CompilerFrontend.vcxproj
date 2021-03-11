@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="CompilerFrontend.cpp" />
     <ClCompile Include="ComplexFront.cpp" />
+    <ClCompile Include="Errors\ErrorTag.cpp" />
     <ClCompile Include="Lexer\Scanner.cpp" />
     <ClCompile Include="Parser\ast_parser\AstNode.cpp" />
     <ClCompile Include="Parser\ast_parser\Parser.cpp" />
@@ -160,6 +161,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ComplexFront.h" />
+    <ClInclude Include="Errors\Error.h" />
+    <ClInclude Include="Errors\ErrorTag.h" />
     <ClInclude Include="Lexer\Scanner.h" />
     <ClInclude Include="Lexer\States.h" />
     <ClInclude Include="Parser\include\AstDrawer.h" />

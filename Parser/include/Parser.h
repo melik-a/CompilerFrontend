@@ -6,6 +6,7 @@
 #include "SyntaxToken.h"
 #include "AstNode.h"
 #include "../../SymbolTable/HashMap/HashMap.h"
+#include "../../Errors/Error.h"
 
 
 /*	STMT - START POINT
@@ -73,9 +74,11 @@
 
 struct Parser
 {
+	using hash_map = HashMap<std::string, float>;
+
 	Parser(std::vector<SyntaxToken>* lex_table, size_t lines) : _lexems(*lex_table), _lines(lines) {}
 
-	std::vector<AstNode*>* parse(HashMap<std::string, float>& symbol_table);
+	std::vector<AstNode*>* parse(hash_map& symbol_table, std::vector<Error>& error_list);
 
 	std::vector<SyntaxToken>* get_lexems();
 
@@ -84,16 +87,17 @@ struct Parser
 
 		size_t _current{};
 		size_t _lines{};
+		static const unsigned int _error_level = 0x0000A001;
 
 		SyntaxToken peek_token(size_t pos) const;
 		SyntaxToken current_token() const;
 		SyntaxToken next_token();
 		SyntaxToken lookahead() const;
 		
-		bool stmt(AstNode* stmt_node, HashMap<std::string, float>& symbol_table);
-		bool expr(AstNode* expr_node, HashMap<std::string, float>& symbol_table);
-		bool add_sub(AstNode* add_sub_node, HashMap<std::string, float>& symbol_table);
-		bool trans(AstNode* trans_node, HashMap<std::string, float>& symbol_table);
-		bool mul_div(AstNode* mul_div_node, HashMap<std::string, float>& symbol_table);
-		bool factor(AstNode* factor_node, HashMap<std::string, float>& symbol_table);
+		bool stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool expr(AstNode* expr_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool add_sub(AstNode* add_sub_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool trans(AstNode* trans_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool mul_div(AstNode* mul_div_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Error>& error_list);
 };

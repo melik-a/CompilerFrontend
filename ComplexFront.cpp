@@ -19,48 +19,75 @@ ComplexFront::~ComplexFront()
 }
 
 
-void ComplexFront::front_compile(std::string file)
+bool ComplexFront::front_compile(std::string file)
 {
 	try
 	{
 		LexicalScanner lexer(file);
-		_lexems = lexer.scan();
+		_errors = new std::vector<Error>();
+		_lexems = lexer.scan(*_errors);
 
 		size_t num_of_lines = lexer.get_num_of_lines();
 
 		Parser parser(_lexems, num_of_lines);
 		_symbol_table = new HashMap<std::string, float>();
-		_parsed_ast = parser.parse(*_symbol_table);
-
-		std::cout << "front compiled successfuly" << std::endl;
+		
+		_parsed_ast = parser.parse(*_symbol_table, *_errors);
+		if (_errors->empty())
+		{
+			std::cout << "\n-> input file - " << file <<
+				"\n-> front compiled successfuly" << std::endl;
+			return true;
+		}
+		else
+		{
+			std::cout << "\n-> input file - " << file <<
+				"\n-> front compile failed" << std::endl;
+			print_error_list();
+		}
+		return false;
 	}
-	catch (const std::runtime_error & runtime_error)
+	catch (const std::runtime_error& runtime_error)
 	{
 		std::cout << "[error] - " << runtime_error.what() << std::endl;
 	}
-	catch (const std::exception & exception)
+	catch (const std::exception& exception)
 	{
 		std::cout << "[error] - " << exception.what() << std::endl;
 	}
 }
 
+
 void ComplexFront::print_parsed_lines()
 {
 	if (_lexems)
 	{
-		std::cout << "source code lines:\n";
+		size_t line{ 1 };
+		std::cout << "\n-> source code lines\n";
+		std::cout << line << ". ";
 		for (size_t i = 0; i < _lexems->size(); i++)
 		{
-			std::cout << _lexems->at(i).lexeme << " ";
+			std::cout << _lexems->at(i).lexeme;
+			if (i < _lexems->size() - 1 && _lexems->at(i + 1).token_type != SyntaxTag::SEMICOLON_TOKEN)
+				std::cout << " ";
 			if (_lexems->at(i).token_type == SyntaxTag::SEMICOLON_TOKEN)
-				std::cout << std::endl;
+			{
+				if (i < _lexems->size() - 1 && _lexems->at(i + 1).token_type != SyntaxTag::END_OF_FILE)
+				{
+					std::cout << std::endl;
+					line++;
+					std::cout << line << ". ";
+				}
+			}
 		}
+		std::cout << "\n" << std::endl;
 	}
 }
 
 
 void ComplexFront::print_symbol_table()
 {
+	std::ios_base::fmtflags initial(std::cout.flags());
 	if (_symbol_table)
 	{
 		std::cout << " -> symbol table <- " << std::endl;
@@ -95,28 +122,92 @@ void ComplexFront::print_symbol_table()
 		}
 		std::cout << " ----------------------------------------------------------------------- " << std::endl;
 	}
+	std::cout.flags(initial);
 }
 
 
 void ComplexFront::print_line_and_tree()
 {
+	std::cout << "\n-> parsed lines and their ast\n";
 	if (_lexems && _parsed_ast)
 	{
-		size_t line{ 0 };
+		size_t line{0};
 		AstDrawer drawer;
+		std::cout << "\nparsed line 1:" << std::endl;
 		for (size_t i = 0; i < _lexems->size(); i++)
 		{
-			std::cout << _lexems->at(i).lexeme << " ";
+			std::cout << _lexems->at(i).lexeme; 
+			if (i < _lexems->size() - 1 && _lexems->at(i + 1).token_type != SyntaxTag::SEMICOLON_TOKEN)
+				std::cout << " ";
 			if (_lexems->at(i).token_type == SyntaxTag::SEMICOLON_TOKEN)
 			{
 				std::cout << std::endl;
-				std::cout << "\nast of the line: " << std::endl;
+				std::cout << "\nast of the line "<< line + 1 <<": \n" << std::endl;
 				drawer.draw_tree(_parsed_ast->at(line), true);
 				line++;
-				std::cout << std::endl;
+				if (i < _lexems->size() - 1 && _lexems->at(i + 1).token_type != SyntaxTag::END_OF_FILE)
+					std::cout << "\nparsed line "<< line + 1 <<": " << std::endl;
 			}
 		}
 	}
+}
+
+
+void ComplexFront::print_error_list()
+{
+	std::ios_base::fmtflags initial(std::cout.flags());
+	std::cout << "-> list of errors\n";
+	std::cout << "---------"
+		<< "----"
+		<< "---------------"
+		<< "----------------------------------------------------------------------------------------------------"
+		<< "---------------"
+		<< "----"
+		<< "----"
+		<< "---\n";
+	std::cout << "code";
+	std::cout << "  |";
+	std::cout << "\t";
+	std::cout.width(15);
+	std::cout.fill(' ');
+	std::cout << std::left << "error type";
+	std::cout << "| ";
+	std::cout.width(100);
+	std::cout.fill(' ');
+	std::cout << std::left << "message";
+	std::cout << "| ";
+	std::cout.width(15);
+	std::cout.fill(' ');
+	std::cout << "file name";
+	std::cout << "|";
+	std::cout.width(4);
+	std::cout.fill(' ');
+	std::cout << "line";
+	std::cout << "| ";
+	std::cout << "pos";
+	std::cout << "|\n";
+	std::cout << "---------"
+		<< "----"
+		<< "---------------"
+		<< "----------------------------------------------------------------------------------------------------"
+		<< "---------------"
+		<< "----"
+		<< "----"
+		<< "---\n";
+	for (auto& er : *_errors)
+	{
+		er.print();
+	}
+	std::cout << "---------"
+		<< "----"
+		<< "---------------"
+		<< "----------------------------------------------------------------------------------------------------"
+		<< "---------------"
+		<< "----"
+		<< "----"
+		<< "---\n";
+
+	std::cout.flags(initial);
 }
 
 
@@ -125,11 +216,11 @@ void ComplexFront::draw_all_trees()
 	if (_parsed_ast)
 	{
 		AstDrawer drawer;
-		std::cout << "parsed ast trees:\n";
+		std::cout << "\n-> parsed ast trees\n" << std::endl;
 		for (auto& sentence : *_parsed_ast)
 		{
 			drawer.draw_tree(sentence, true);
-			std::cout << std::endl;
+			std::cout << "\n" << std::endl;
 		}
 	}
 }

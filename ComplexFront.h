@@ -9,17 +9,21 @@
 
 #include "SymbolTable/HashMap/HashMap.h"
 
+#include "Errors/Error.h"
+
 struct ComplexFront
 {
 	~ComplexFront();
 
-	void front_compile(std::string file);
+	bool front_compile(std::string file);
 	void draw_all_trees();
 	void print_parsed_lines();
 	void print_symbol_table();
 	void print_line_and_tree();
+	void print_error_list();
 
 	private:
+		std::vector<Error>* _errors;
 		std::vector<AstNode*>* _parsed_ast { nullptr };
 		std::vector<SyntaxToken>* _lexems { nullptr };
 		HashMap<std::string, float>* _symbol_table { nullptr };

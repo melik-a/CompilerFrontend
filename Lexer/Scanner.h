@@ -8,6 +8,7 @@
 #include "States.h"
 #include "../Parser/include/SyntaxToken.h"
 #include "../Parser/include/SyntaxTag.h"
+#include "../Errors/Error.h"
 
 struct LexicalScanner
 {
@@ -15,7 +16,7 @@ struct LexicalScanner
 	LexicalScanner(std::string& file);
 	~LexicalScanner();
 
-	std::vector<SyntaxToken>* scan();
+	std::vector<SyntaxToken>* scan(std::vector<Error>& error_list);
 	size_t get_num_of_lines();
 
 	private:
@@ -24,6 +25,7 @@ struct LexicalScanner
 		size_t _symbol_pos_at_line{1};
 		std::ifstream _file;
 		States _current_state;
+		static const unsigned int _error_level = 0x0000B001;
 
 		void start_state_changing(char symbol, std::string& lexeme);
 		void id_state_changing(char symbol, std::string& lexeme);
