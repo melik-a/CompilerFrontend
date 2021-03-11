@@ -131,14 +131,14 @@ bool Parser::add_sub(AstNode* add_sub_node, hash_map& symbol_table, std::vector<
 			return true;
 		}
 	}
-	else
+	/*else
 	{
 		SyntaxToken err_t = current_token();
 		error_list.push_back(Error("current file", _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected \"MINUS_TOKEN\" or \"PLUS_TOKEN\", but given \"" + err_t.lexeme + "\".",
 			err_t.line, err_t.symbol_pos));
-	}
+	}*/
 	return false;
 }
 
@@ -175,14 +175,14 @@ bool Parser::mul_div(AstNode* mul_div_node, hash_map& symbol_table, std::vector<
 			return true;
 		}
 	}
-	else 
+	/*else 
 	{
 		SyntaxToken err_t = current_token();
 		error_list.push_back(Error("current file", _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected \"STAR_TOKEN\" or \"SLASH_TOKEN\", but given \"" + err_t.lexeme + "\".",
 			err_t.line, err_t.symbol_pos));
-	}
+	}*/
 	return false;
 }
 
