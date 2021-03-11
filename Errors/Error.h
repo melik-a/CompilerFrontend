@@ -32,7 +32,11 @@ struct Error
 		std::cout.width(4);
 		std::cout.fill(' ');
 		std::cout << _line;
+		std::cout.width(3);
+		std::cout.fill(' ');
 		std::cout << "| ";
+		std::cout.width(3);
+		std::cout.fill(' ');
 		std::cout << _pos;
 		std::cout << "|\n";
 	}

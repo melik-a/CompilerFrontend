@@ -27,7 +27,7 @@ struct AstDrawer
 		int count_of_child = node->num_of_children();
 		for (int curr_child = 0; curr_child < count_of_child; curr_child++)
 		{
-			is_last = (curr_child == node->num_of_children() - 1);
+			is_last = (curr_child == count_of_child - 1);
 			draw_tree(node->get_child(curr_child), false, is_last, indent);
 		}
 	}

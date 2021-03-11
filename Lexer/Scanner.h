@@ -18,11 +18,13 @@ struct LexicalScanner
 
 	std::vector<SyntaxToken>* scan(std::vector<Error>& error_list);
 	size_t get_num_of_lines();
+	size_t get_num_of_codelines();
 
 	private:
 		std::vector<SyntaxToken>* _lexeme_table;
 		size_t _line_counter{1};
-		size_t _symbol_pos_at_line{1};
+		size_t _code_line_counter{1};
+		size_t _symbol_pos_at_line{0};
 		std::ifstream _file;
 		States _current_state;
 		static const unsigned int _error_level = 0x0000B001;
@@ -34,6 +36,7 @@ struct LexicalScanner
 		void separator_state_changing(char symbol, std::string& lexeme);
 		void arithm_operator_state_changing(char symbol, std::string& lexeme);
 		void comment_state_changing(char symbol, std::string& lexeme);
+		void error_state_changing(char symbol, std::string& lexeme, std::vector<Error>& error_list);
 
 		bool is_letter(char symbol) const;
 		bool is_digit(char symbol) const;

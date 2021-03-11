@@ -47,8 +47,10 @@ int main()
 			{
 				ComplexFront front;
 				front.front_compile(file);
+				front.print_parsed_lines();
 				front.print_symbol_table();
 				front.print_line_and_tree();
+				front.draw_all_trees();
 			}
 			catch (...) {}
 			break;

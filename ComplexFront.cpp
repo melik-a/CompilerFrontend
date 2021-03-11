@@ -27,7 +27,7 @@ bool ComplexFront::front_compile(std::string file)
 		_errors = new std::vector<Error>();
 		_lexems = lexer.scan(*_errors);
 
-		size_t num_of_lines = lexer.get_num_of_lines();
+		size_t num_of_lines = lexer.get_num_of_codelines();
 
 		Parser parser(_lexems, num_of_lines);
 		_symbol_table = new HashMap<std::string, float>();
@@ -163,7 +163,7 @@ void ComplexFront::print_error_list()
 		<< "----------------------------------------------------------------------------------------------------"
 		<< "---------------"
 		<< "----"
-		<< "----"
+		<< "------"
 		<< "---\n";
 	std::cout << "code";
 	std::cout << "  |";
@@ -179,10 +179,12 @@ void ComplexFront::print_error_list()
 	std::cout.width(15);
 	std::cout.fill(' ');
 	std::cout << "file name";
-	std::cout << "|";
+	std::cout << "| ";
 	std::cout.width(4);
 	std::cout.fill(' ');
 	std::cout << "line";
+	std::cout.width(3);
+	std::cout.fill(' ');
 	std::cout << "| ";
 	std::cout << "pos";
 	std::cout << "|\n";
@@ -192,7 +194,7 @@ void ComplexFront::print_error_list()
 		<< "----------------------------------------------------------------------------------------------------"
 		<< "---------------"
 		<< "----"
-		<< "----"
+		<< "------"
 		<< "---\n";
 	for (auto& er : *_errors)
 	{
@@ -204,7 +206,7 @@ void ComplexFront::print_error_list()
 		<< "----------------------------------------------------------------------------------------------------"
 		<< "---------------"
 		<< "----"
-		<< "----"
+		<< "------"
 		<< "---\n";
 
 	std::cout.flags(initial);

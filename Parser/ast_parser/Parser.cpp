@@ -80,20 +80,24 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 		}
 		else
 		{
+			
 			SyntaxToken err_t = current_token();
 			error_list.push_back(Error("current file", _error_level,
-				ErrorTag::SYNTAX_ERROR,
-				"unexpected token, expected \"ASSIGN_TOKEN\", but given \"" + err_t.lexeme + "\".",
-				err_t.line, err_t.symbol_pos));
+					ErrorTag::SYNTAX_ERROR,
+					"unexpected token, expected \"ASSIGN_TOKEN\", but given \"" + err_t.lexeme + "\".",
+					err_t.line, err_t.symbol_pos));
 		}
 	}
 	else
 	{
 		SyntaxToken err_t = current_token();
-		error_list.push_back(Error("current file", _error_level,
-			ErrorTag::SYNTAX_ERROR,
-			"unexpected token, expected \"ID_TOKEN\", but given \"" + err_t.lexeme + "\".",
-			err_t.line, err_t.symbol_pos));
+		if (err_t.token_type != SyntaxTag::END_OF_FILE)
+		{
+			error_list.push_back(Error("current file", _error_level,
+				ErrorTag::SYNTAX_ERROR,
+				"unexpected token, expected \"ASSIGN_TOKEN\", but given \"" + err_t.lexeme + "\".",
+				err_t.line, err_t.symbol_pos));
+		}
 	}
 	return false;
 }
@@ -119,8 +123,7 @@ bool Parser::add_sub(AstNode* add_sub_node, hash_map& symbol_table, std::vector<
 	SyntaxToken word = lookahead();
 	if (word.token_type == SyntaxTag::PLUS_TOKEN || word.token_type == SyntaxTag::MINUS_TOKEN)
 	{
-		add_sub_node->add_child(new SyntaxToken(current_token()));
-		next_token();
+		add_sub_node->add_child(new SyntaxToken(next_token()));
 		AstNode* trans_node = new AstNode(AstTag::TRANS);
 		if (trans(trans_node, symbol_table, error_list))
 		{
@@ -159,12 +162,13 @@ bool Parser::trans(AstNode* trans_node, hash_map& symbol_table, std::vector<Erro
 
 bool Parser::mul_div(AstNode* mul_div_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
-	// MUL_DIV -> FACTOR MUL_DIV
+	// MUL_DIV -> * FACTOR MUL_DIV
+	//			| / FACTOR MUL_DIV
+	//			| EPS
 	SyntaxToken word = lookahead();
 	if (word.token_type == SyntaxTag::STAR_TOKEN || word.token_type == SyntaxTag::SLASH_TOKEN)
 	{
-		mul_div_node->add_child(new SyntaxToken(current_token()));
-		next_token();
+		mul_div_node->add_child(new SyntaxToken(next_token()));
 		AstNode* factor_node = new AstNode(AstTag::FACTOR);
 		if (factor(factor_node, symbol_table, error_list))
 		{
