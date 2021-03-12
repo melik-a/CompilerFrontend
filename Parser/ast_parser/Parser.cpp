@@ -53,7 +53,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 	if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
 		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
+			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT);
 		stmt_node->add_child(new SyntaxToken(current_token()));
 		if (next_token().token_type == SyntaxTag::ASSIGN_TOKEN)
 		{
@@ -75,6 +75,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 						ErrorTag::SYNTAX_ERROR,
 						"unexpected token, expected \"SEMICOLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
 						err_t.line, err_t.symbol_pos));
+					return false;
 				}
 			}
 		}
@@ -86,6 +87,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 					ErrorTag::SYNTAX_ERROR,
 					"unexpected token, expected \"ASSIGN_TOKEN\", but given \"" + err_t.lexeme + "\".",
 					err_t.line, err_t.symbol_pos));
+			return false;
 		}
 	}
 	else
@@ -97,6 +99,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"ASSIGN_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
+			return false;
 		}
 	}
 	return false;
@@ -215,7 +218,7 @@ bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Er
 			}
 		}
 	}
-	else if (current_token().token_type == SyntaxTag::FLOAT_NUMBER)
+	else if (current_token().token_type == SyntaxTag::FLOAT)
 	{
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
@@ -223,14 +226,14 @@ bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Er
 	else if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
 		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
+			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT);
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
 	}
 	SyntaxToken err_t = current_token();
 	error_list.push_back(Error("current file", _error_level,
 		ErrorTag::SYNTAX_ERROR,
-		"unexpected token, expected \"ID_TOKEN\"\\\"FLOAT_NUMBER\"\\\"LP_TOKEN\", but given \"" + err_t.lexeme + "\".",
+		"unexpected token, expected \"ID_TOKEN\"\\\"FLOAT\"\\\"LP_TOKEN\", but given \"" + err_t.lexeme + "\".",
 		err_t.line, err_t.symbol_pos));
 	return false;
 }

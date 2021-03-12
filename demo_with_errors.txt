@@ -1,4 +1,6 @@
 
+negative :%= %10;
+
 some_var:=0.9*10.5;
 another_one 
 :=some_var

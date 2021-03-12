@@ -2,12 +2,25 @@
 
 enum class AstTag
 {
+	GLOB,
+	PROGRAM,
+	PROG_DEF,
+	VAR_DECL,
+	BLOCK,
+	DECL,
+	DECL_LIST,
+	ID_LIST,
+	TYPE,
+	ARR_SIZE,
+
 	STMT,
 	EXPRESSION,
 	ADD_SUB,
 	TRANS,
 	MUL_DIV,
 	FACTOR,
+	
+	BASIC_TYPE,
 
 	SYNTAX_TOKEN
 };

@@ -42,7 +42,7 @@ std::vector<SyntaxToken>* LexicalScanner::scan(std::vector<Error>& error_list)
 			case States::ARITHM_OPERATOR:
 				arithm_operator_state_changing(curr_symbol, lexeme);
 				break;
-			case States::FLOAT_NUMBER:
+			case States::FLOAT:
 				float_num_state_changing(curr_symbol, lexeme);
 				break;
 			case States::ASSIGNMENT:
@@ -90,7 +90,7 @@ void LexicalScanner::start_state_changing(char symbol, std::string& lexeme)
 	else if (is_digit(symbol))
 	{
 		lexeme += symbol;
-		_current_state = States::FLOAT_NUMBER;
+		_current_state = States::FLOAT;
 		_symbol_pos_at_line++;
 	}
 	else if (symbol == ';' || symbol == '(' || symbol == ')')
@@ -228,7 +228,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == '*' || symbol == '/')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::ARITHM_OPERATOR;
@@ -236,7 +236,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == '{')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::COMMENT;
@@ -244,7 +244,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == ';')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::SEPARATOR;
@@ -252,7 +252,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::START;
@@ -297,7 +297,7 @@ void LexicalScanner::separator_state_changing(char symbol, std::string& lexeme)
 	else if (is_digit(symbol))
 	{
 		lexeme += symbol;
-		_current_state = States::FLOAT_NUMBER;
+		_current_state = States::FLOAT;
 		_symbol_pos_at_line++;
 	}
 	else if (symbol == ';' || symbol == '(' || symbol == ')')
@@ -366,7 +366,7 @@ void LexicalScanner::arithm_operator_state_changing(char symbol, std::string& le
 	else if (is_digit(symbol))
 	{
 		lexeme += symbol;
-		_current_state = States::FLOAT_NUMBER;
+		_current_state = States::FLOAT;
 		_symbol_pos_at_line++;
 	}
 	else if (symbol == '(' || symbol == ')')
@@ -435,7 +435,7 @@ void LexicalScanner::error_state_changing(char symbol, std::string& lexeme, std:
 	else if (is_digit(symbol))
 	{
 		lexeme = symbol;
-		_current_state = States::FLOAT_NUMBER;
+		_current_state = States::FLOAT;
 		_symbol_pos_at_line++;
 	}
 	else if (symbol == ';' || symbol == '(' || symbol == ')')
