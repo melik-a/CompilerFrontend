@@ -57,7 +57,7 @@ parsing expamples:
 		|        |--- <FACTOR>
 		|        |    |___ <FLOAT_NUMBER, 0.9>
 		|        |___ <MUL_DIV>
-		|            |--- <FLOAT_NUMBER, 0.9>
+		|            |--- <STAR_TOKEN, *>
 		|            |___ <FACTOR>
 		|                |___ <FLOAT_NUMBER, 10.5>
 		|___ <SEMICOLON_TOKEN, ;>
@@ -92,3 +92,5 @@ Parser:
     An abstract syntax tree is just a set of nodes (AstNode), 
     each node stores information in itself, and can also have child nodes.
 
+___melik-a,___ 
+___2021___ 
