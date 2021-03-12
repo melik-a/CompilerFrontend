@@ -42,7 +42,7 @@ std::vector<SyntaxToken>* LexicalScanner::scan(std::vector<Error>& error_list)
 			case States::ARITHM_OPERATOR:
 				arithm_operator_state_changing(curr_symbol, lexeme);
 				break;
-			case States::FLOAT:
+			case States::FLOAT_NUMBER:
 				float_num_state_changing(curr_symbol, lexeme);
 				break;
 			case States::ASSIGNMENT:
@@ -86,35 +86,42 @@ void LexicalScanner::start_state_changing(char symbol, std::string& lexeme)
 		lexeme += symbol;
 		_current_state = States::ID;
 		_symbol_pos_at_line++;
+		id_state_changing(symbol, lexeme);
 	}
 	else if (is_digit(symbol))
 	{
 		lexeme += symbol;
-		_current_state = States::FLOAT;
+		_current_state = States::FLOAT_NUMBER;
 		_symbol_pos_at_line++;
+		float_num_state_changing(symbol, lexeme);
 	}
-	else if (symbol == ';' || symbol == '(' || symbol == ')')
+	else if (symbol == ';' || symbol == '(' || symbol == ')' || symbol == '.'
+		|| symbol == ',' || symbol == '[' || symbol == ']')
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::SEPARATOR;
 		_symbol_pos_at_line++;
+		separator_state_changing(symbol, lexeme);
 	}
 	else if (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/')
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::ARITHM_OPERATOR;
 		_symbol_pos_at_line++;
+		arithm_operator_state_changing(symbol, lexeme);
 	}
 	else if (symbol == ':')
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::ASSIGNMENT;
 		_symbol_pos_at_line++;
+		assignment_state_changing(symbol, lexeme);
 	}
 	else if (symbol == '{')
 	{
 		_current_state = States::COMMENT;
 		_symbol_pos_at_line++;
+		comment_state_changing(symbol, lexeme);
 	}
 	else if (symbol == '\n' || symbol == '\t' || symbol == ' ')
 	{
@@ -124,7 +131,9 @@ void LexicalScanner::start_state_changing(char symbol, std::string& lexeme)
 			_symbol_pos_at_line = 0;
 		}
 		else
+		{
 			_symbol_pos_at_line++;
+		}
 		return;
 	}
 	else
@@ -132,6 +141,7 @@ void LexicalScanner::start_state_changing(char symbol, std::string& lexeme)
 		lexeme += symbol;
 		_current_state = States::ERROR;
 		_symbol_pos_at_line++;
+		//error_state_changing(symbol, lexeme,error_list);
 	}
 }
 
@@ -143,59 +153,14 @@ void LexicalScanner::id_state_changing(char symbol, std::string& lexeme)
 		lexeme += symbol;
 		_symbol_pos_at_line++;
 	}
-	else if (symbol == ':')
-	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
-											_line_counter, _symbol_pos_at_line });
-		lexeme = symbol;
-		_current_state = States::ASSIGNMENT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/')
-	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
-											_line_counter, _symbol_pos_at_line });
-		lexeme = symbol;
-		_current_state = States::ARITHM_OPERATOR;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '{')
-	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
-											_line_counter, _symbol_pos_at_line });
-		lexeme = "";
-		_current_state = States::COMMENT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == ';' || symbol == ')')
-	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
-											_line_counter, _symbol_pos_at_line });
-		lexeme = symbol;
-		_current_state = States::SEPARATOR;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
-	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
-											_line_counter, _symbol_pos_at_line });
-		lexeme = "";
-		_current_state = States::START;
-		if (symbol == '\n')
-		{
-			_line_counter++;
-			_symbol_pos_at_line = 0;
-		}
-		else
-		{
-			_symbol_pos_at_line++;
-		}
-	}
 	else
 	{
-		lexeme = symbol;
-		_current_state = States::ERROR;
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
+									   _line_counter, _symbol_pos_at_line });
+		lexeme = "";
+		_current_state = States::START;
 		_symbol_pos_at_line++;
+		start_state_changing(symbol, lexeme);
 	}
 }
 
@@ -207,15 +172,16 @@ void LexicalScanner::assignment_state_changing(char symbol, std::string& lexeme)
 		lexeme += symbol;
 		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ASSIGN_TOKEN,
 											_line_counter, _symbol_pos_at_line });
-		lexeme = "";
-		_current_state = States::START;
 	}
 	else
 	{
-		lexeme = symbol;
-		_current_state = States::ERROR;
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::COLON_TOKEN,
+											   _line_counter, _symbol_pos_at_line });
 	}
+	lexeme = "";
+	_current_state = States::START;
 	_symbol_pos_at_line++;
+	start_state_changing(symbol, lexeme);
 }
 
 
@@ -228,7 +194,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == '*' || symbol == '/')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::ARITHM_OPERATOR;
@@ -236,7 +202,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == '{')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::COMMENT;
@@ -244,7 +210,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == ';')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = symbol;
 		_current_state = States::SEPARATOR;
@@ -252,7 +218,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
 	{
-		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT,
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::FLOAT_NUMBER,
 											_line_counter, _symbol_pos_at_line });
 		lexeme = "";
 		_current_state = States::START;
@@ -281,62 +247,25 @@ void LexicalScanner::separator_state_changing(char symbol, std::string& lexeme)
 	else if (lexeme == ")")
 		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::RP_TOKEN,
 											_line_counter, _symbol_pos_at_line });
+	else if (lexeme == "[")
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::LSB_TOKEN,
+											_line_counter, _symbol_pos_at_line });
+	else if (lexeme == "]")
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::RSB_TOKEN,
+											_line_counter, _symbol_pos_at_line });
 	else if (lexeme == ";")
-	{
 		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::SEMICOLON_TOKEN,
 											_line_counter, _symbol_pos_at_line });
-	}
+	else if (lexeme == ".")
+			_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::DOT_TOKEN,
+												_line_counter, _symbol_pos_at_line });
+	else if (lexeme == ",")
+			_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::COMMA_TOKEN,
+												_line_counter, _symbol_pos_at_line });
 	lexeme = "";
-
-	if (is_letter(symbol))
-	{
-		lexeme += symbol;
-		_current_state = States::ID;
-		_symbol_pos_at_line++;
-	}
-	else if (is_digit(symbol))
-	{
-		lexeme += symbol;
-		_current_state = States::FLOAT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == ';' || symbol == '(' || symbol == ')')
-	{
-		lexeme += symbol;
-		_current_state = States::SEPARATOR;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/')
-	{
-		lexeme += symbol;
-		_current_state = States::ARITHM_OPERATOR;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '{')
-	{
-		_current_state = States::COMMENT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
-	{
-		_current_state = States::START;
-		if (symbol == '\n')
-		{
-			_code_line_counter++;
-			_line_counter++;
-			_symbol_pos_at_line = 0;
-		}
-		else
-		{
-			_symbol_pos_at_line++;
-		}
-	}
-	else
-	{
-		lexeme = symbol;
-		_current_state = States::ERROR;
-		_symbol_pos_at_line++;
-	}
+	_current_state = States::START;
+	_symbol_pos_at_line++;
+	start_state_changing(symbol, lexeme);
 }
 
 
@@ -354,51 +283,10 @@ void LexicalScanner::arithm_operator_state_changing(char symbol, std::string& le
 	else if (lexeme == "/")
 		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::SLASH_TOKEN,
 											_line_counter, _symbol_pos_at_line });
-
 	lexeme = "";
-
-	if (is_letter(symbol))
-	{
-		lexeme += symbol;
-		_current_state = States::ID;
-		_symbol_pos_at_line++;
-	}
-	else if (is_digit(symbol))
-	{
-		lexeme += symbol;
-		_current_state = States::FLOAT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '(' || symbol == ')')
-	{
-		lexeme += symbol;
-		_current_state = States::SEPARATOR;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '{')
-	{
-		_current_state = States::COMMENT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
-	{
-		_current_state = States::START;
-		if (symbol == '\n')
-		{
-			_line_counter++;
-			_symbol_pos_at_line = 0;
-		}
-		else
-		{
-			_symbol_pos_at_line++;
-		}
-	}
-	else
-	{
-		lexeme = symbol;
-		_current_state = States::ERROR;
-		_symbol_pos_at_line++;
-	}
+	_current_state = States::START;
+	_symbol_pos_at_line++;
+	start_state_changing(symbol, lexeme);
 }
 
 
@@ -419,6 +307,7 @@ void LexicalScanner::comment_state_changing(char symbol, std::string& lexeme)
 	}
 }
 
+
 void LexicalScanner::error_state_changing(char symbol, std::string& lexeme, std::vector<Error>& error_list)
 {
 	error_list.push_back(Error("current file", _error_level,
@@ -426,61 +315,9 @@ void LexicalScanner::error_state_changing(char symbol, std::string& lexeme, std:
 		"lexer can't recognize character as an input language character. Bad character \"" + lexeme + "\"",
 		_line_counter, _symbol_pos_at_line));
 	lexeme = "";
-	if (is_letter(symbol))
-	{
-		lexeme = symbol;
-		_current_state = States::ID;
-		_symbol_pos_at_line++;
-	}
-	else if (is_digit(symbol))
-	{
-		lexeme = symbol;
-		_current_state = States::FLOAT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == ';' || symbol == '(' || symbol == ')')
-	{
-		lexeme = symbol;
-		_current_state = States::SEPARATOR;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/')
-	{
-		lexeme = symbol;
-		_current_state = States::ARITHM_OPERATOR;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == ':')
-	{
-		lexeme = symbol;
-		_current_state = States::ASSIGNMENT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '{')
-	{
-		_current_state = States::COMMENT;
-		_symbol_pos_at_line++;
-	}
-	else if (symbol == '\n' || symbol == '\t' || symbol == ' ')
-	{
-		if (symbol == '\n')
-		{
-			_line_counter++;
-			_symbol_pos_at_line = 0;
-			_current_state = States::START;
-		}
-		else 
-		{
-			_symbol_pos_at_line++;
-		}
-		return;
-	}
-	else
-	{
-		lexeme = symbol;
-		_current_state = States::ERROR;
-		_symbol_pos_at_line++;
-	}
+	_current_state = States::START;
+	_symbol_pos_at_line++;
+	start_state_changing(symbol, lexeme);
 }
 
 

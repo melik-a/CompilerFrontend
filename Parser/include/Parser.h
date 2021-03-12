@@ -52,9 +52,9 @@
 					|		/ FACTOR MUL_DIV
 					|		EPS
 		FACTOR		->		( EXPR )
-					|		FLOAT_NUMBER | INTEGER_NUMBER | BYTE_NUMBER | DOUBLE_NUMBER | CHAR_LITERAL | FALSE | TRUE 
+					|		FLOAT_NUMBER_NUMBER | INTEGER_NUMBER | BYTE_NUMBER | DOUBLE_NUMBER | CHAR_LITERAL | FALSE | TRUE 
 					|		ID
-		BASIC_TYPE	->		FLOAT_TYPE | INTEGER_TYPE | BOOL_TYPE | DOUBLE_TYPE | CHAR_TYPE | BYTE_TYPE		
+		BASIC_TYPE	->		FLOAT_NUMBER_TYPE | INTEGER_TYPE | BOOL_TYPE | DOUBLE_TYPE | CHAR_TYPE | BYTE_TYPE		
 
 
 
@@ -76,7 +76,7 @@
 	
 	program my_first_program;
 	var 
-		some_var, another_one, _ten, result: float;
+		some_var, another_one, _ten, result: FLOAT_NUMBER;
 		int_variable : integer;
 	begin
 		some_var := 0.9 * 10.5;
@@ -103,7 +103,7 @@
 /*	parsing expamples:
 	
 	source code line - some_var := 0.9 * 10.5;
-	lexical analyzer output - <ID, some_var> <ASSIGN, := > <FLOAT, 0.9> <ARITHM_OPERATOR, * > <FLOAT, 10.5>
+	lexical analyzer output - <ID, some_var> <ASSIGN, := > <FLOAT_NUMBER, 0.9> <ARITHM_OPERATOR, * > <FLOAT_NUMBER, 10.5>
 	syntax analyzer output -				
 	|___ <STMT>
 		|--- <ID_TOKEN, some_var>
@@ -111,11 +111,11 @@
 		|--- <EXPRESSION>
 		|    |___ <TRANS>
 		|        |--- <FACTOR>
-		|        |    |___ <FLOAT, 0.9>
+		|        |    |___ <FLOAT_NUMBER, 0.9>
 		|        |___ <MUL_DIV>
 		|            |--- <STAR_TOKEN, *>
 		|            |___ <FACTOR>
-		|                |___ <FLOAT, 10.5>
+		|                |___ <FLOAT_NUMBER, 10.5>
 		|___ <SEMICOLON_TOKEN, ;>							
 */
 

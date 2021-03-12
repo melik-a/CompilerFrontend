@@ -53,7 +53,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 	if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
 		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT);
+			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		stmt_node->add_child(new SyntaxToken(current_token()));
 		if (next_token().token_type == SyntaxTag::ASSIGN_TOKEN)
 		{
@@ -195,7 +195,7 @@ bool Parser::mul_div(AstNode* mul_div_node, hash_map& symbol_table, std::vector<
 
 bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
-	// FACTOR -> ( EXPR ) | FLOAT_NUM | ID_TOKEN
+	// FACTOR -> ( EXPR ) | FLOAT_NUMBER_NUM | ID_TOKEN
 	if (next_token().token_type == SyntaxTag::LP_TOKEN)
 	{
 		factor_node->add_child(new SyntaxToken(current_token()));
@@ -218,7 +218,7 @@ bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Er
 			}
 		}
 	}
-	else if (current_token().token_type == SyntaxTag::FLOAT)
+	else if (current_token().token_type == SyntaxTag::FLOAT_NUMBER)
 	{
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
@@ -226,14 +226,14 @@ bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Er
 	else if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
 		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT);
+			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
 	}
 	SyntaxToken err_t = current_token();
 	error_list.push_back(Error("current file", _error_level,
 		ErrorTag::SYNTAX_ERROR,
-		"unexpected token, expected \"ID_TOKEN\"\\\"FLOAT\"\\\"LP_TOKEN\", but given \"" + err_t.lexeme + "\".",
+		"unexpected token, expected \"ID_TOKEN\"\\\"FLOAT_NUMBER\"\\\"LP_TOKEN\", but given \"" + err_t.lexeme + "\".",
 		err_t.line, err_t.symbol_pos));
 	return false;
 }

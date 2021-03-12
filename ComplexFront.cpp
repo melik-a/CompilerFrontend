@@ -45,7 +45,6 @@ bool ComplexFront::front_compile(std::string file)
 				"\n-> front compile failed" << std::endl;
 			print_error_list();
 		}
-		return false;
 	}
 	catch (const std::runtime_error& runtime_error)
 	{
@@ -55,6 +54,7 @@ bool ComplexFront::front_compile(std::string file)
 	{
 		std::cout << "[error] - " << exception.what() << std::endl;
 	}
+	return false;
 }
 
 

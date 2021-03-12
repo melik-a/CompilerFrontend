@@ -37,6 +37,8 @@ struct LexicalScanner
 		void arithm_operator_state_changing(char symbol, std::string& lexeme);
 		void comment_state_changing(char symbol, std::string& lexeme);
 		void error_state_changing(char symbol, std::string& lexeme, std::vector<Error>& error_list);
+		//void integer_num_state_changing(char symbol, std::string& lexeme, std::vector<Error>& error_list);
+
 
 		bool is_letter(char symbol) const;
 		bool is_digit(char symbol) const;

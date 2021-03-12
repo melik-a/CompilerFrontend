@@ -7,8 +7,8 @@ std::ostream& operator<<(std::ostream& os, const SyntaxTag& tag)
 		case SyntaxTag::ID_TOKEN:
 			os << "ID_TOKEN";
 			break;
-		case SyntaxTag::FLOAT:
-			os << "FLOAT";
+		case SyntaxTag::FLOAT_NUMBER:
+			os << "FLOAT_NUMBER";
 			break;
 		case SyntaxTag::ASSIGN_TOKEN:
 			os << "ASSIGN_TOKEN";

@@ -7,7 +7,7 @@ enum class SyntaxTag
 
 	ID_TOKEN,			// { a-z || A-Z || _ }, {a-z || A-Z || _ || 0-9 }
 
-	FLOAT_TYPE,			// float
+	FLOAT_TYPE,			// FLOAT_NUMBER
 	INTEGER_TYPE,		// integer
 	BYTE_TYPE,			// byte
 	BOOL_TYPE,			// bool
@@ -17,7 +17,6 @@ enum class SyntaxTag
 	FLOAT_NUMBER,		// 
 	INTEGER_NUMBER,		// 
 	DOUBLE_NUMBER,		// 
-	BYTE_NUMBER,		// 
 
 	CHAR_LITERAL,		// symbol in single quotes
 

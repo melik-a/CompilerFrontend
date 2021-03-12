@@ -9,7 +9,7 @@ struct Identifier
 	S _value;
 	T _datatype;
 	Identifier() : 
-		_key(), _value(), _datatype(SyntaxTag::FLOAT) {}
+		_key(), _value(), _datatype(SyntaxTag::FLOAT_NUMBER) {}
 
 	Identifier(const F& key, const S& value, const T& type) :
 		_key(key), _value(value), _datatype(type) {}
