@@ -34,13 +34,10 @@ int main()
 			std::cin.ignore(std::cin.rdbuf()->in_avail());
 			continue;
 		}
-		//std::locale loc(setlocale(LC_ALL, ""));
 		switch (selection)
 		{
 		case 1:
 			std::cout << "\ninput the path to file {C:\\TEMP\\example.txt} -> ";
-			
-			//std::cin.imbue(loc);
 			std::cin >> file;
 			std::cout << file << std::endl;
 			try

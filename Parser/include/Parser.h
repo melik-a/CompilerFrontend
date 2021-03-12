@@ -9,7 +9,10 @@
 #include "../../Errors/Error.h"
 
 
-/*	STMT - START POINT
+/*	STMT - STATEMENT - START POINT FOR A WHILE
+	VAR - VARIABLE
+	DECL - DECLARATION
+	D_LIST - LIST OF DECLARATIONS - COMMA SEPARATED DECLARATIONS
 	ID - IDENTIFICATOR
 	ASSIGN - ASSIGN OPERATOR - :=
 	EXPR - COMMON EXPRESSION
@@ -21,19 +24,27 @@
 
 	
 	grammar rules:
-	
-		STMT	->	ID := EXPR;
-		EXPR	->	TRANS ADD_SUB
-		ADD_SUB ->	+ TRANS ADD_SUB
-				 |	- TRANS ADD_SUB
-				 |	EPS
-		TRANS	->	FACTOR MUL_DIV
-		MUL_DIV ->	* FACTOR MUL_DIV
-				 |	/ FACTOR MUL_DIV
-				 |	EPS
-		FACTOR	->	( EXPR )
-				 |	FLOAT_NUM
-				 |	ID
+
+		STMT		->		VAR DECL;	|	ID := EXPR;
+		DECL		->		ID ID_LIST	:	TYPE D_LIST
+		D_LIST		->		; DECL 
+					|		EPS
+		ID_LIST		->		, ID_LIST
+					|		EPS
+		TYPE		->		array [ ARR_SIZE ] of TYPE
+					|		BASIC_TYPE
+		EXPR		->		TRANS ADD_SUB
+		ADD_SUB		->		+ TRANS ADD_SUB
+					|		- TRANS ADD_SUB
+					|		EPS
+		TRANS		->		FACTOR MUL_DIV
+		MUL_DIV		->		* FACTOR MUL_DIV
+					|		/ FACTOR MUL_DIV
+					|		EPS
+		FACTOR		->		( EXPR )
+					|		BASIC_TYPE
+					|		ID
+		BASIC_TYPE	->		FLOAT | INTEGER | BOOLEAN | DOUBLE | CHAR | BYTE
 
 	parser type LL(1)
 	algorithm - recursive descent
@@ -43,6 +54,7 @@
 
 /*	example of syntactically correct sentences:
 	
+	var some_var, another_one, _ten, result: float;
 	some_var := 0.9 * 10.5;
 	another_one := some_var + 3.0;
 	_ten := 10e-2;
@@ -65,7 +77,7 @@
 		|        |--- <FACTOR>
 		|        |    |___ <FLOAT_NUMBER, 0.9>
 		|        |___ <MUL_DIV>
-		|            |--- <FLOAT_NUMBER, 0.9>
+		|            |--- <STAR_TOKEN, *>
 		|            |___ <FACTOR>
 		|                |___ <FLOAT_NUMBER, 10.5>
 		|___ <SEMICOLON_TOKEN, ;>							

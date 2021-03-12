@@ -187,11 +187,13 @@ void LexicalScanner::id_state_changing(char symbol, std::string& lexeme)
 			_symbol_pos_at_line = 0;
 		}
 		else
+		{
 			_symbol_pos_at_line++;
+		}
 	}
 	else
 	{
-		lexeme = "error on ID state change. invalid character -> " + symbol;
+		lexeme = symbol;
 		_current_state = States::ERROR;
 		_symbol_pos_at_line++;
 	}
@@ -210,7 +212,7 @@ void LexicalScanner::assignment_state_changing(char symbol, std::string& lexeme)
 	}
 	else
 	{
-		lexeme = "error on ASSIGNMENT state change. invalid character -> " + symbol;
+		lexeme = symbol;
 		_current_state = States::ERROR;
 	}
 	_symbol_pos_at_line++;
@@ -264,7 +266,7 @@ void LexicalScanner::float_num_state_changing(char symbol, std::string& lexeme)
 	}
 	else
 	{
-		lexeme = "error on FLOAT_NUMBER state change.invalid character -> " + symbol;
+		lexeme = symbol;
 		_current_state = States::ERROR;
 		_symbol_pos_at_line++;
 	}
@@ -317,7 +319,6 @@ void LexicalScanner::separator_state_changing(char symbol, std::string& lexeme)
 	}
 	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
 	{
-		lexeme = "";
 		_current_state = States::START;
 		if (symbol == '\n')
 		{
@@ -326,11 +327,13 @@ void LexicalScanner::separator_state_changing(char symbol, std::string& lexeme)
 			_symbol_pos_at_line = 0;
 		}
 		else
+		{
 			_symbol_pos_at_line++;
+		}
 	}
 	else
 	{
-		lexeme = "error on SEPARATOR state change. invalid character -> " + symbol;
+		lexeme = symbol;
 		_current_state = States::ERROR;
 		_symbol_pos_at_line++;
 	}
@@ -379,7 +382,6 @@ void LexicalScanner::arithm_operator_state_changing(char symbol, std::string& le
 	}
 	else if (symbol == ' ' || symbol == '\t' || symbol == '\n')
 	{
-		lexeme = "";
 		_current_state = States::START;
 		if (symbol == '\n')
 		{
@@ -387,11 +389,13 @@ void LexicalScanner::arithm_operator_state_changing(char symbol, std::string& le
 			_symbol_pos_at_line = 0;
 		}
 		else
+		{
 			_symbol_pos_at_line++;
+		}
 	}
 	else
 	{
-		lexeme = "error on ARITHM_OPERATOR state change. invalid character -> " + symbol;
+		lexeme = symbol;
 		_current_state = States::ERROR;
 		_symbol_pos_at_line++;
 	}
@@ -419,36 +423,36 @@ void LexicalScanner::error_state_changing(char symbol, std::string& lexeme, std:
 {
 	error_list.push_back(Error("current file", _error_level,
 		ErrorTag::LEXICAL_ERROR,
-		"lexer can't recognize character as an input language character. " + lexeme,
+		"lexer can't recognize character as an input language character. Bad character \"" + lexeme + "\"",
 		_line_counter, _symbol_pos_at_line));
 	lexeme = "";
 	if (is_letter(symbol))
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::ID;
 		_symbol_pos_at_line++;
 	}
 	else if (is_digit(symbol))
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::FLOAT_NUMBER;
 		_symbol_pos_at_line++;
 	}
 	else if (symbol == ';' || symbol == '(' || symbol == ')')
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::SEPARATOR;
 		_symbol_pos_at_line++;
 	}
 	else if (symbol == '+' || symbol == '-' || symbol == '*' || symbol == '/')
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::ARITHM_OPERATOR;
 		_symbol_pos_at_line++;
 	}
 	else if (symbol == ':')
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::ASSIGNMENT;
 		_symbol_pos_at_line++;
 	}
@@ -465,13 +469,15 @@ void LexicalScanner::error_state_changing(char symbol, std::string& lexeme, std:
 			_symbol_pos_at_line = 0;
 			_current_state = States::START;
 		}
-		else
+		else 
+		{
 			_symbol_pos_at_line++;
+		}
 		return;
 	}
 	else
 	{
-		lexeme += symbol;
+		lexeme = symbol;
 		_current_state = States::ERROR;
 		_symbol_pos_at_line++;
 	}
