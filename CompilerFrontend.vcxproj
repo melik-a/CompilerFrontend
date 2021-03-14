@@ -164,7 +164,6 @@
     <ClInclude Include="Errors\Error.h" />
     <ClInclude Include="Errors\ErrorTag.h" />
     <ClInclude Include="Lexer\Scanner.h" />
-    <ClInclude Include="Lexer\States.h" />
     <ClInclude Include="Parser\include\AstDrawer.h" />
     <ClInclude Include="Parser\include\AstNode.h" />
     <ClInclude Include="Parser\include\AstTag.h" />
