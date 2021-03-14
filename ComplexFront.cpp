@@ -27,7 +27,7 @@ bool ComplexFront::front_compile(std::string file)
 		_errors = new std::vector<Error>();
 		_lexems = lexer.scan(*_errors);
 
-		size_t num_of_lines = lexer.get_num_of_codelines();
+		size_t num_of_lines = lexer.get_num_of_lines();
 
 		Parser parser(_lexems, num_of_lines);
 		_symbol_table = new HashMap<std::string, float>();

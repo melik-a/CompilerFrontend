@@ -8,6 +8,22 @@ LexicalScanner::LexicalScanner(std::string& file)
 	if (!_file)
 		throw std::runtime_error("invalid file name or path");
 	_lexeme_table = new std::vector<SyntaxToken>();
+	_keywords = { 
+		{"array",SyntaxTag::ARRAY_TOKEN},
+		{"begin", SyntaxTag::BEGIN_TOKEN},
+		{"bool", SyntaxTag::BOOL_TYPE},
+		{"byte", SyntaxTag::BYTE_TYPE},
+		{"char", SyntaxTag::CHAR_TYPE},
+		{"double", SyntaxTag::DOUBLE_TYPE},
+		{"end", SyntaxTag::END_TOKEN},
+		{"float", SyntaxTag::FLOAT_TYPE},
+		{"false", SyntaxTag::FALSE},
+		{"integer", SyntaxTag::INTEGER_TYPE},
+		{"of", SyntaxTag::OF_TOKEN},
+		{"program", SyntaxTag::PROGRAM_TOKEN},
+		{"true", SyntaxTag::TRUE},
+		{"var", SyntaxTag::VAR_TOKEN}
+	};
 }
 
 
@@ -27,46 +43,10 @@ std::vector<SyntaxToken>* LexicalScanner::scan(std::vector<Error>& error_list)
 		{
 			switch (_current_line[_current_pos])
 			{
-				// keywords and literals scan
-				//case 'a': // array
-				//	a_lexemes_scan();
-				//	break;
-				//case 'b': // bool, begin, byte
-				//	b_lexemes_scan();
-				//	break;
-				//case 'c': // char,
-				//	c_lexemes_scan();
-				//	break;
-				//case 'd': // double
-				//	d_lexemes_scan();
-				//	break;
-				//case 'e': // end
-				//	e_lexemes_scan();
-				//	break;
-				//case 'f': // float, false
-				//	f_lexemes_scan();
-				//	break;
-				//case 'i': // integer
-				//	i_lexemes_scan();
-				//	break;
-				//case 'o': // of
-				//	o_lexemes_scan();
-				//	break;
-				//case 'p': // program
-				//	p_lexemes_scan();
-				//	break;
-				//case 't': // true
-				//	t_lexemes_scan();
-				//	break;
-				//case 'v': // think about making function that will scan 'var' keyword and all variable declaration block
-				//	f_lexemes_scan();
-				//	break;
-				//case '\'':
-				//	char_literal_lexeme_scan();
-				//	break;
-					//
-
-					// key one character lexemes
+				case '\'':
+					char_literal_lexeme_scan(error_list);
+					break;
+				// key one character lexemes
 				case '(':
 					_lexeme_table->push_back(SyntaxToken{ "(", SyntaxTag::LP_TOKEN,
 														_line_counter, _current_pos });
@@ -175,8 +155,16 @@ void LexicalScanner::id_lexeme_scan()
 		symbol = _current_line[++_current_pos];
 		not_terminal = _current_pos < _current_line.length();
 	}
-	_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
-									_line_counter, _current_pos });
+	auto word = _keywords.find(lexeme);
+	if (word != _keywords.end())
+	{
+		_lexeme_table->push_back(SyntaxToken{ word->first, word->second, _line_counter, _current_pos });
+	}
+	else
+	{
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::ID_TOKEN,
+						_line_counter, _current_pos });
+	}
 }
 
 
@@ -263,74 +251,26 @@ void LexicalScanner::ignore_comment(std::vector<Error>& error_list)
 }
 
 
-void LexicalScanner::a_lexemes_scan()
+void LexicalScanner::char_literal_lexeme_scan(std::vector<Error>& error_list)
 {
-
-}
-
-
-void LexicalScanner::b_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::c_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::d_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::e_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::f_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::i_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::o_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::p_lexemes_scan()
-{
-
-}
-
-void LexicalScanner::t_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::v_lexemes_scan()
-{
-
-}
-
-
-void LexicalScanner::char_literal_lexeme_scan()
-{
-
+	std::string lexeme = "";
+	char symbol = _current_line[_current_pos];
+	lexeme += symbol;
+	
+	lexeme += symbol;
+	symbol = _current_line[++_current_pos];
+	if (symbol == '\'')
+	{
+		lexeme += symbol;
+		_lexeme_table->push_back(SyntaxToken{ lexeme, SyntaxTag::CHAR_LITERAL,
+									_line_counter, _current_pos });
+	}
+	else
+	{
+		error_list.push_back(Error(_file_name, _error_level, ErrorTag::LEXICAL_ERROR,
+			"lexer can't identify character literal lexeme, not closed single quote.", _line_counter, _current_pos));
+	}
+	++_current_pos;
 }
 
 
@@ -353,11 +293,5 @@ bool LexicalScanner::is_letter(char symbol) const
 size_t LexicalScanner::get_num_of_lines()
 {
 	return _line_counter;
-}
-
-
-size_t LexicalScanner::get_num_of_codelines()
-{
-	return _code_line_counter;
 }
 

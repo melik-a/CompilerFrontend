@@ -7,6 +7,18 @@ std::ostream& operator<<(std::ostream& os, const SyntaxTag& tag)
 		case SyntaxTag::ID_TOKEN:
 			os << "ID_TOKEN";
 			break;
+		case SyntaxTag::DOUBLE_NUMBER:
+			os << "DOUBLE_NUMBER";
+			break;
+		case SyntaxTag::INTEGER_NUMBER:
+			os << "INTEGER_NUMBER";
+			break;
+		case SyntaxTag::CHAR_LITERAL:
+			os << "CHAR_LITERAL";
+			break;
+		case SyntaxTag::BOOL_TYPE:
+			os << "BOOL_TYPE";
+			break;
 		case SyntaxTag::FLOAT_NUMBER:
 			os << "FLOAT_NUMBER";
 			break;

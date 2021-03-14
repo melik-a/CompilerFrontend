@@ -2,10 +2,12 @@
 #include <iostream>
 enum class SyntaxTag
 {
-	PROGRAM,			// program keyword
+	PROGRAM_TOKEN,			// program keyword
 
-
-	ID_TOKEN,			// { a-z || A-Z || _ }, {a-z || A-Z || _ || 0-9 }
+	ARRAY_TOKEN,		// array - array [1..20] of
+	OF_TOKEN,			// of - - array [1..20] of
+	BEGIN_TOKEN,		// begin
+	END_TOKEN,			// end
 
 	FLOAT_TYPE,			// float
 	INTEGER_TYPE,		// integer
@@ -13,6 +15,8 @@ enum class SyntaxTag
 	BOOL_TYPE,			// bool
 	DOUBLE_TYPE,		// double
 	CHAR_TYPE,			// char
+
+	ID_TOKEN,			// { a-z || A-Z || _ }, {a-z || A-Z || _ || 0-9 }
 
 	FLOAT_NUMBER,		// 
 	INTEGER_NUMBER,		// 
@@ -40,9 +44,7 @@ enum class SyntaxTag
 	COLON_TOKEN,		// :
 	DOT_TOKEN,			// .
 	
-	ARRAY_TOKEN,		// array - array [1..20] of
-	OF_TOKEN,			// of - - array [1..20] of
-	
+
 	END_OF_FILE,
 	UNKNOWN_TOKEN
 };

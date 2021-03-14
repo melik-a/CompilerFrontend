@@ -218,7 +218,9 @@ bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Er
 			}
 		}
 	}
-	else if (current_token().token_type == SyntaxTag::DOUBLE_NUMBER)
+	else if (current_token().token_type == SyntaxTag::DOUBLE_NUMBER
+		|| current_token().token_type == SyntaxTag::FLOAT_NUMBER
+		|| current_token().token_type == SyntaxTag::INTEGER_NUMBER)
 	{
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
