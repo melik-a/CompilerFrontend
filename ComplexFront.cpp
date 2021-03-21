@@ -219,9 +219,9 @@ void ComplexFront::draw_all_trees()
 	{
 		AstDrawer drawer;
 		std::cout << "\n-> parsed ast trees\n" << std::endl;
-		for (auto& sentence : *_parsed_ast)
+		for (auto& ast : *_parsed_ast)
 		{
-			drawer.draw_tree(sentence, true);
+			drawer.draw_tree(ast, true);
 			std::cout << "\n" << std::endl;
 		}
 	}

@@ -46,7 +46,7 @@ std::vector<SyntaxToken>* LexicalScanner::scan(std::vector<Error>& error_list)
 				case '\'':
 					char_literal_lexeme_scan(error_list);
 					break;
-				// key one character lexemes
+				// one character lexemes key
 				case '(':
 					_lexeme_table->push_back(SyntaxToken{ "(", SyntaxTag::LP_TOKEN,
 														_line_counter, _current_pos });
