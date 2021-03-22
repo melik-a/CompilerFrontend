@@ -52,16 +52,17 @@ bool Parser::global(AstNode* global_node, hash_map& symbol_table, std::vector<Er
 		global_node->add_child(program_node);
 		return true;
 	}
-	else
+	/*else
 	{
 		delete program_node;
-	}
+	}*/
 	return false;
 }
 
 
 bool Parser::program(AstNode* program_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
+	// PROGRAM	->	PROG_DEF VAR_DECL BLOCK
 	AstNode* prog_def_node = new AstNode(AstTag::PROG_DEF);
 	if (prog_def(prog_def_node, symbol_table, error_list))
 	{
@@ -71,10 +72,9 @@ bool Parser::program(AstNode* program_node, hash_map& symbol_table, std::vector<
 		{
 			program_node->add_child(var_decl_node);
 			AstNode* block_node = new AstNode(AstTag::BLOCK);
-			if (block(var_decl_node, symbol_table, error_list))
+			if (block(block_node, symbol_table, error_list))
 			{
 				program_node->add_child(block_node);
-				return true;
 			}
 			else
 			{
@@ -89,8 +89,9 @@ bool Parser::program(AstNode* program_node, hash_map& symbol_table, std::vector<
 	else
 	{
 		delete prog_def_node;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 
@@ -123,7 +124,6 @@ bool Parser::prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vecto
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"ID_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
-			return false;
 		}
 	}
 	else
@@ -140,31 +140,19 @@ bool Parser::prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vecto
 
 bool Parser::var_decl(AstNode* var_decl_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
+	// VAR_DECL	->	VAR DECL
 	if (next_token().token_type == SyntaxTag::VAR_TOKEN)
 	{
 		var_decl_node->add_child(new SyntaxToken(current_token()));
 		AstNode* decl_node = new AstNode(AstTag::DECL);
-		if (decl(decl_node, symbol_table, error_list))
+		while (decl(decl_node, symbol_table, error_list))
 		{
 			var_decl_node->add_child(decl_node);
-			if (next_token().token_type == SyntaxTag::SEMICOLON_TOKEN)
-			{
-				var_decl_node->add_child(new SyntaxToken(current_token()));
-				return true;
-			}
-			else
-			{
-				SyntaxToken err_t = current_token();
-				error_list.push_back(Error("current file", _error_level,
-					ErrorTag::SYNTAX_ERROR,
-					"unexpected token, expected \"SEMICOLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
-					err_t.line, err_t.symbol_pos));
-			}
+			decl_node = new AstNode(AstTag::DECL);
 		}
-		else
-		{
-			delete decl_node;
-		}
+		delete decl_node;
+		if (lookahead().token_type == SyntaxTag::BEGIN_TOKEN)
+			return true;
 	}
 	else
 	{
@@ -180,80 +168,35 @@ bool Parser::var_decl(AstNode* var_decl_node, hash_map& symbol_table, std::vecto
 
 bool Parser::decl(AstNode* decl_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
-	if (next_token().token_type == SyntaxTag::ID_TOKEN)
+	// DECL	->	ID_LIST : TYPE DECL
+	AstNode* id_list_node = new AstNode(AstTag::ID_LIST);
+	if (id_list(id_list_node, symbol_table, error_list))
 	{
-		decl_node->add_child(new SyntaxToken(current_token()));
-		AstNode* id_list_node = new AstNode(AstTag::ID_LIST);
-		if (id_list(id_list_node, symbol_table, error_list))
+		decl_node->add_child(id_list_node);
+		if (next_token().token_type == SyntaxTag::COLON_TOKEN)
 		{
-			decl_node->add_child(id_list_node);
-			if (next_token().token_type == SyntaxTag::COLON_TOKEN)
+			decl_node->add_child(new SyntaxToken(current_token()));
+			AstNode* type_node = new AstNode(AstTag::TYPE);
+			if (type(type_node, symbol_table, error_list))
 			{
-				decl_node->add_child(new SyntaxToken(current_token()));
-				AstNode* type_node = new AstNode(AstTag::TYPE);
-				if (type(type_node, symbol_table, error_list))
+				decl_node->add_child(type_node);
+				if (next_token().token_type == SyntaxTag::SEMICOLON_TOKEN)
 				{
-					decl_node->add_child(type_node);
-					AstNode* decl_list_node = new AstNode(AstTag::DECL_LIST);
-					if (decl_list(decl_list_node, symbol_table, error_list))
-					{
-						decl_node->add_child(decl_list_node);
-						return true;
-					}
-					else
-					{
-						delete decl_list_node;
-					}
+					decl_node->add_child(new SyntaxToken(current_token()));
+					return true;
 				}
 				else
 				{
-					delete type_node;
+					SyntaxToken err_t = current_token();
+					error_list.push_back(Error("current file", _error_level,
+						ErrorTag::SYNTAX_ERROR,
+						"unexpected token, expected \"SEMICOLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
+						err_t.line, err_t.symbol_pos));
 				}
 			}
 			else
 			{
-				SyntaxToken err_t = current_token();
-				error_list.push_back(Error("current file", _error_level,
-					ErrorTag::SYNTAX_ERROR,
-					"unexpected token, expected \"COLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
-					err_t.line, err_t.symbol_pos));
-			}
-		}
-		else
-		{
-			delete id_list_node;
-		}
-	}
-	else
-	{
-		SyntaxToken err_t = current_token();
-		error_list.push_back(Error("current file", _error_level,
-			ErrorTag::SYNTAX_ERROR,
-			"unexpected token, expected \"ID_TOKEN\", but given \"" + err_t.lexeme + "\".",
-			err_t.line, err_t.symbol_pos));
-	}
-	return false;
-}
-
-
-bool Parser::id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<Error>& error_list)
-{
-	SyntaxToken word = lookahead();
-	if (word.token_type == SyntaxTag::COMMA_TOKEN)
-	{
-		id_list_node->add_child(new SyntaxToken(next_token()));
-		if (next_token().token_type == SyntaxTag::ID_TOKEN)
-		{
-			id_list_node->add_child(new SyntaxToken(current_token()));
-			AstNode* id_list_node_nested = new AstNode(AstTag::ID_LIST);
-			if (id_list(id_list_node_nested, symbol_table, error_list))
-			{
-				id_list_node->add_child(id_list_node_nested); 
-			}
-			else
-			{
-				delete id_list_node_nested;
-				return false;
+				delete type_node;
 			}
 		}
 		else
@@ -261,19 +204,50 @@ bool Parser::id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<
 			SyntaxToken err_t = current_token();
 			error_list.push_back(Error("current file", _error_level,
 				ErrorTag::SYNTAX_ERROR,
-				"unexpected token, expected \"ID_TOKEN\", but given \"" + err_t.lexeme + "\".",
+				"unexpected token, expected \"COLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
-			return false;
 		}
 	}
-	return true;
+	else
+	{
+		delete id_list_node;
+	}
+	return false;
+}
+
+
+bool Parser::id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<Error>& error_list)
+{
+	// ID_LIST	->	, ID ID_LIST
+	//			|	EPS
+	if (lookahead().token_type == SyntaxTag::ID_TOKEN)
+	{
+		id_list_node->add_child(new SyntaxToken(next_token()));
+		if (lookahead().token_type == SyntaxTag::COMMA_TOKEN)
+		{
+			id_list_node->add_child(new SyntaxToken(next_token()));
+			id_list(id_list_node, symbol_table, error_list);
+		}
+		return true;
+	}
+	else
+	{
+		SyntaxToken err_t = lookahead();
+		if (err_t.token_type != SyntaxTag::BEGIN_TOKEN)
+			error_list.push_back(Error("current file", _error_level,
+				ErrorTag::SYNTAX_ERROR,
+				"unexpected token, expected \"ID_TOKEN\", but given \"" + err_t.lexeme + "\".",
+				err_t.line, err_t.symbol_pos));
+	}
+	return false;
 }
 
 
 bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
-	SyntaxToken word = lookahead();
-	if (word.token_type == SyntaxTag::ARRAY_TOKEN)
+	// TYPE	->	array[ARR_SIZE] of TYPE
+	//		|	BASIC_TYPE
+	if (lookahead().token_type == SyntaxTag::ARRAY_TOKEN)
 	{
 		type_node->add_child(new SyntaxToken(next_token()));
 		if (next_token().token_type == SyntaxTag::LSB_TOKEN)
@@ -443,10 +417,9 @@ bool Parser::decl_list(AstNode* decl_list_node, hash_map& symbol_table, std::vec
 		else
 		{
 			delete decl_node;
-			return false;
 		}
 	}
-	return true;
+	return false;
 }
 
 
@@ -457,38 +430,37 @@ bool Parser::block(AstNode* block_node, hash_map& symbol_table, std::vector<Erro
 	{
 		block_node->add_child(new SyntaxToken(current_token()));
 		AstNode* stmt_node = new AstNode(AstTag::STMT);
-		if (stmt(stmt_node, symbol_table, error_list))
+		while (stmt(stmt_node, symbol_table, error_list))
 		{
 			block_node->add_child(stmt_node);
-			if (next_token().token_type == SyntaxTag::END_TOKEN)
+			stmt_node = new AstNode(AstTag::STMT);
+		}
+		delete stmt_node;
+		
+		if (next_token().token_type == SyntaxTag::END_TOKEN)
+		{
+			block_node->add_child(new SyntaxToken(current_token()));
+			if (next_token().token_type == SyntaxTag::DOT_TOKEN)
 			{
 				block_node->add_child(new SyntaxToken(current_token()));
-				if (next_token().token_type == SyntaxTag::DOT_TOKEN)
-				{
-					block_node->add_child(new SyntaxToken(current_token()));
-					return true;
-				}
-				else
-				{
-					SyntaxToken err_t = current_token();
-					error_list.push_back(Error("current file", _error_level,
-						ErrorTag::SYNTAX_ERROR,
-						"unexpected token, expected \"DOT_TOKEN\", but given \"" + err_t.lexeme + "\".",
-						err_t.line, err_t.symbol_pos));
-				}
+				return true;
 			}
 			else
 			{
 				SyntaxToken err_t = current_token();
 				error_list.push_back(Error("current file", _error_level,
 					ErrorTag::SYNTAX_ERROR,
-					"unexpected token, expected \"END_TOKEN\", but given \"" + err_t.lexeme + "\".",
+					"unexpected token, expected \"DOT_TOKEN\", but given \"" + err_t.lexeme + "\".",
 					err_t.line, err_t.symbol_pos));
 			}
 		}
 		else
 		{
-			delete stmt_node;
+			SyntaxToken err_t = current_token();
+			error_list.push_back(Error("current file", _error_level,
+				ErrorTag::SYNTAX_ERROR,
+				"unexpected token, expected \"END_TOKEN\", but given \"" + err_t.lexeme + "\".",
+				err_t.line, err_t.symbol_pos));
 		}
 	}
 	else
@@ -506,12 +478,12 @@ bool Parser::block(AstNode* block_node, hash_map& symbol_table, std::vector<Erro
 
 bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
-	// STMT		->	ID := EXPR; STMT
+	// STMT		->	ID := EXPR;
 	//			|	EPS
-	if (next_token().token_type == SyntaxTag::ID_TOKEN)
+	if (lookahead().token_type == SyntaxTag::ID_TOKEN)
 	{
 		// adding element in symbol table
-		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
+		if (symbol_table.search(next_token().lexeme) == symbol_table.get_size())
 			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		//
 		stmt_node->add_child(new SyntaxToken(current_token()));
@@ -525,11 +497,6 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 				if (next_token().token_type == SyntaxTag::SEMICOLON_TOKEN)
 				{
 					stmt_node->add_child(new SyntaxToken(current_token()));
-					AstNode* stmt_node_nested = new AstNode(AstTag::STMT);
-					if (stmt(stmt_node_nested, symbol_table, error_list))
-						stmt_node->add_child(stmt_node_nested);
-					else
-						delete stmt_node_nested;
 					return true;
 				}
 				else

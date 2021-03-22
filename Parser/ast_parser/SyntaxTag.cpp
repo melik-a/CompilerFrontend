@@ -100,6 +100,9 @@ std::ostream& operator<<(std::ostream& os, const SyntaxTag& tag)
 		case SyntaxTag::END_OF_FILE:
 			os << "END_OF_FILE";
 			break;
+		case SyntaxTag::END_TOKEN:
+			os << "END_TOKEN";
+			break;
 		case SyntaxTag::UNKNOWN_TOKEN:
 			os << "UNKNOWN_TOKEN";
 			break;
