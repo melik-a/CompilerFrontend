@@ -2,7 +2,7 @@
 
 enum class AstTag
 {
-	GLOB,
+	GLOBAL,
 	PROGRAM,
 	PROG_DEF,
 	VAR_DECL,

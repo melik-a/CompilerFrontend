@@ -31,18 +31,18 @@
 		GLOB		->		PROGRAM
 		PROGRAM		->		PROG_DEF VAR_DECL BLOCK
 		PROG_DEF	->		PROGRAM ID;
-		VAR_DECL	->		VAR DECL;
-		DECL		->		ID ID_LIST	:	TYPE DECL_LIST
-		DECL_LIST	->		; DECL 
+		VAR_DECL	->		VAR DECL
+		DECL		->		ID_LIST	:	TYPE ; DECL
 					|		EPS
-		ID_LIST		->		, ID ID_LIST
+		ID_LIST		->		ID, ID_LIST
 					|		EPS
 		TYPE		->		array [ ARR_SIZE ] of TYPE
 					|		BASIC_TYPE
 		ARR_SIZE	->		1..BYTE_NUMBER
-		BLOCK		->		BEGIN STMT END.
-		STMT		->		ID := EXPR; STMT
+		BLOCK		->		BEGIN STMTS END.
+		STMTS		->		STMT STMTS
 					|		EPS
+		STMT		->		ID := EXPR;
 		EXPR		->		TRANS ADD_SUB
 		ADD_SUB		->		+ TRANS ADD_SUB
 					|		- TRANS ADD_SUB
@@ -92,10 +92,10 @@
 		|	 |--- <PROGRAM>
 		|	 |--- <ID_TOKEN, my_first_program>
 		|	 |___ <SEMICOLON_TOKEN, ;>
-		|--- <VAR_DECL>
-		|	 |--- <VAR_TOKEN, var>
-		|	 |--- <DECL>
-		|	 |	  |--- 
+			 |--- <VAR_DECL>
+			 |	  |--- <VAR_TOKEN, var>
+			 |	  |--- <DECL>
+			 |	  |	   |--- 
 
 
 */	
@@ -142,6 +142,21 @@ struct Parser
 		SyntaxToken next_token();
 		SyntaxToken lookahead() const;
 		
+		bool global(AstNode* global_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool program(AstNode* program_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool var_decl(AstNode* var_decl_node, hash_map& symbol_table, std::vector<Error>& error_list);
+
+		bool decl(AstNode* decl_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool decl_list(AstNode* decl_list_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		
+
+		bool block(AstNode* block_node, hash_map& symbol_table, std::vector<Error>& error_list);
+
 		bool stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>& error_list);
 		bool expr(AstNode* expr_node, hash_map& symbol_table, std::vector<Error>& error_list);
 		bool add_sub(AstNode* add_sub_node, hash_map& symbol_table, std::vector<Error>& error_list);

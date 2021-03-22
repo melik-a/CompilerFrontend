@@ -46,7 +46,6 @@ int main()
 				front.front_compile(file);
 				front.print_parsed_lines();
 				front.print_symbol_table();
-				front.print_line_and_tree();
 				front.draw_all_trees();
 			}
 			catch (...) {}
@@ -70,7 +69,6 @@ int main()
 				front.front_compile("demo.txt");
 				front.print_parsed_lines();
 				front.print_symbol_table();
-				front.print_line_and_tree();
 				front.draw_all_trees();
 			}
 			catch (...) {}

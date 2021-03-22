@@ -19,7 +19,6 @@ struct ComplexFront
 	void draw_all_trees();
 	void print_parsed_lines();
 	void print_symbol_table();
-	void print_line_and_tree();
 	void print_error_list();
 
 	private:

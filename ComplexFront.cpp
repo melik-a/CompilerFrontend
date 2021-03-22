@@ -126,33 +126,6 @@ void ComplexFront::print_symbol_table()
 }
 
 
-void ComplexFront::print_line_and_tree()
-{
-	std::cout << "\n-> parsed lines and their ast\n";
-	if (_lexems && _parsed_ast)
-	{
-		size_t line{0};
-		AstDrawer drawer;
-		std::cout << "\nparsed line 1:" << std::endl;
-		for (size_t i = 0; i < _lexems->size(); i++)
-		{
-			std::cout << _lexems->at(i).lexeme; 
-			if (i < _lexems->size() - 1 && _lexems->at(i + 1).token_type != SyntaxTag::SEMICOLON_TOKEN)
-				std::cout << " ";
-			if (_lexems->at(i).token_type == SyntaxTag::SEMICOLON_TOKEN)
-			{
-				std::cout << std::endl;
-				std::cout << "\nast of the line "<< line + 1 <<": \n" << std::endl;
-				drawer.draw_tree(_parsed_ast->at(line), true);
-				line++;
-				if (i < _lexems->size() - 1 && _lexems->at(i + 1).token_type != SyntaxTag::END_OF_FILE)
-					std::cout << "\nparsed line "<< line + 1 <<": " << std::endl;
-			}
-		}
-	}
-}
-
-
 void ComplexFront::print_error_list()
 {
 	std::ios_base::fmtflags initial(std::cout.flags());
@@ -218,10 +191,10 @@ void ComplexFront::draw_all_trees()
 	if (_parsed_ast)
 	{
 		AstDrawer drawer;
-		std::cout << "\n-> parsed ast trees\n" << std::endl;
-		for (auto& sentence : *_parsed_ast)
+		std::cout << "\n-> parsed trees\n" << std::endl;
+		for (auto& ast : *_parsed_ast)
 		{
-			drawer.draw_tree(sentence, true);
+			drawer.draw_tree(ast, true);
 			std::cout << "\n" << std::endl;
 		}
 	}
