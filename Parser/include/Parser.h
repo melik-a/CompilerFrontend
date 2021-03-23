@@ -12,7 +12,6 @@
 /*	STMT - STATEMENT - START POINT FOR A WHILE
 	VAR - VARIABLE
 	DECL - DECLARATION
-	D_LIST - LIST OF DECLARATIONS - SEMICOLON SEPARATED DECLARATIONS
 	ID_LIST - LIST OF IDENTIFIER
 	ID - IDENTIFIER
 	TYPE - DATA TYPE OF IDENTIFIER
@@ -32,16 +31,14 @@
 		PROGRAM		->		PROG_DEF VAR_DECL BLOCK
 		PROG_DEF	->		PROGRAM ID;
 		VAR_DECL	->		VAR DECL
-		DECL		->		ID_LIST	:	TYPE ; DECL
+		DECL		->		ID_LIST	:	TYPE ;
 					|		EPS
 		ID_LIST		->		ID, ID_LIST
 					|		EPS
 		TYPE		->		array [ ARR_SIZE ] of TYPE
 					|		BASIC_TYPE
 		ARR_SIZE	->		1..BYTE_NUMBER
-		BLOCK		->		BEGIN STMTS END.
-		STMTS		->		STMT STMTS
-					|		EPS
+		BLOCK		->		BEGIN STMT END.
 		STMT		->		ID := EXPR;
 		EXPR		->		TRANS ADD_SUB
 		ADD_SUB		->		+ TRANS ADD_SUB
@@ -72,7 +69,7 @@
 */
 
 
-/*	example of syntactically correct sentences:
+/*	example of syntactically correct program:
 	
 	program my_first_program;
 	var 
@@ -87,20 +84,45 @@
 		result {another comment} := (some_var *another_one) / (some_var - _ten) * _ten;
 	end.
 
-	|__GLOBAL
-		|--- <PROG_DEF>
-		|	 |--- <PROGRAM>
-		|	 |--- <ID_TOKEN, my_first_program>
-		|	 |___ <SEMICOLON_TOKEN, ;>
-			 |--- <VAR_DECL>
-			 |	  |--- <VAR_TOKEN, var>
-			 |	  |--- <DECL>
-			 |	  |	   |--- 
-
+|___ <GLOBAL>
+    |___ <PROGRAM>
+        |--- <PROG_DEF>
+        |    |--- <PROGRAM_TOKEN, program>
+        |    |--- <ID_TOKEN, my_first_program>
+        |    |___ <SEMICOLON_TOKEN, ;>
+        |--- <VAR_DECL>
+        |    |--- <VAR_TOKEN, var>
+        |    |--- <DECL>
+        |    |    |--- <ID_LIST>
+        |    |    |    |--- <ID_TOKEN, some_var>
+        |    |    |    |--- <COMMA_TOKEN, ,>
+        |    |    |    |--- <ID_TOKEN, another_one>
+        |    |    |    |--- <COMMA_TOKEN, ,>
+        |    |    |    |--- <ID_TOKEN, _ten>
+        |    |    |    |--- <COMMA_TOKEN, ,>
+        |    |    |    |___ <ID_TOKEN, result>
+        |    |    |--- <COLON_TOKEN, :>
+        |    |    |--- <TYPE>
+        |    |    |    |___ <BASIC_TYPE>
+        |    |    |        |___ <FLOAT_TYPE, float>
+        |    |    |___ <SEMICOLON_TOKEN, ;>
+        |    |___ <DECL>
+        |        |--- <ID_LIST>
+        |        |    |___ <ID_TOKEN, int_variable>
+        |        |--- <COLON_TOKEN, :>
+        |        |--- <TYPE>
+        |        |    |___ <BASIC_TYPE>
+        |        |        |___ <INTEGER_TYPE, integer>
+        |        |___ <SEMICOLON_TOKEN, ;>
+        |___ <BLOCK>
+            |--- <BEGIN_TOKEN, begin>
+            |--- <STMT>
+            |    |--- <ID_TOKEN, some_var>
+		... ... ... ... ... ... ... ...
 
 */	
 
-/*	parsing expamples:
+/*	statement parsing expamples:
 	
 	source code line - some_var := 0.9 * 10.5;
 	lexical analyzer output - <ID, some_var> <ASSIGN, := > <FLOAT_NUMBER, 0.9> <ARITHM_OPERATOR, * > <FLOAT_NUMBER, 10.5>
@@ -151,9 +173,7 @@ struct Parser
 		bool id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<Error>& error_list);
 		bool type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>& error_list);
 		bool arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		bool basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		bool decl_list(AstNode* decl_list_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		
+		bool basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::vector<Error>& error_list);		
 
 		bool block(AstNode* block_node, hash_map& symbol_table, std::vector<Error>& error_list);
 

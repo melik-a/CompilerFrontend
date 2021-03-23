@@ -46,6 +46,8 @@ std::vector<SyntaxToken>* Parser::get_lexems()
 
 bool Parser::global(AstNode* global_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
+	// GLOBAL -> PROGRAM
+	//		  |  ?
 	AstNode* program_node = new AstNode(AstTag::PROGRAM);
 	if (program(program_node, symbol_table, error_list))
 	{
@@ -97,6 +99,7 @@ bool Parser::program(AstNode* program_node, hash_map& symbol_table, std::vector<
 
 bool Parser::prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
+	// PROG_DEF	-> PROGRAM ID;
 	if (current_token().token_type == SyntaxTag::PROGRAM_TOKEN)
 	{
 		prog_def_node->add_child(new SyntaxToken(current_token()));
@@ -334,6 +337,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 
 bool Parser::arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
+	// ARR_SIZE	-> 1..BYTE_NUMBER
 	SyntaxToken one = next_token();
 	if (one.lexeme == "1")
 	{
@@ -381,6 +385,7 @@ bool Parser::arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vecto
 
 bool Parser::basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::vector<Error>& error_list)
 {
+	// BASIC_TYPE -> FLOAT_NUMBER_TYPE | INTEGER_TYPE | BOOL_TYPE | DOUBLE_TYPE | CHAR_TYPE | BYTE_TYPE		
 	SyntaxToken token = next_token();
 	if (token.token_type == SyntaxTag::FLOAT_TYPE ||
 		token.token_type == SyntaxTag::INTEGER_TYPE ||
@@ -398,26 +403,6 @@ bool Parser::basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::v
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected some kind of datatype, but given \"" + token.lexeme + "\".",
 			token.line, token.symbol_pos));
-	}
-	return false;
-}
-
-
-bool Parser::decl_list(AstNode* decl_list_node, hash_map& symbol_table, std::vector<Error>& error_list)
-{
-	if (lookahead().token_type == SyntaxTag::SEMICOLON_TOKEN)
-	{
-		decl_list_node->add_child(new SyntaxToken(next_token()));
-		AstNode* decl_node = new AstNode(AstTag::DECL);
-		if (decl(decl_node, symbol_table, error_list))
-		{
-			decl_list_node->add_child(decl_node);
-			return true;
-		}
-		else
-		{
-			delete decl_node;
-		}
 	}
 	return false;
 }
