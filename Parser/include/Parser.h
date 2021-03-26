@@ -9,8 +9,11 @@
 #include "../../Errors/Error.h"
 
 
-/*	STMT - STATEMENT - START POINT FOR A WHILE
-	VAR - VARIABLE
+/*	GLOBAL - GLOBAL SCOPE
+	PROGRAM - PROGRAM STRUCTURE DESCRIPTION
+	PROG_DEF - PROGRAM DEFINITION - JUST KEYWORD AND PROGRAM NAME
+	STMT - STATEMENT
+	VAR_DECL - VARIABLE DECLARATION BLOCK
 	DECL - DECLARATION
 	ID_LIST - LIST OF IDENTIFIER
 	ID - IDENTIFIER
@@ -27,7 +30,7 @@
 	
 	grammar rules:
 
-		GLOB		->		PROGRAM
+		GLOBAL		->		PROGRAM
 		PROGRAM		->		PROG_DEF VAR_DECL BLOCK
 		PROG_DEF	->		PROGRAM ID;
 		VAR_DECL	->		VAR DECL
@@ -146,7 +149,8 @@ struct Parser
 {
 	using hash_map = HashMap<std::string, float>;
 
-	Parser(std::vector<SyntaxToken>* lex_table, size_t lines) : _lexems(*lex_table), _lines(lines) {}
+	Parser(std::vector<SyntaxToken>* lex_table, size_t lines, std::string filename)
+		: _lexems(*lex_table), _lines(lines), _filename(filename) {}
 
 	std::vector<AstNode*>* parse(hash_map& symbol_table, std::vector<Error>& error_list);
 
@@ -156,6 +160,7 @@ struct Parser
 		std::vector<SyntaxToken>& _lexems;
 
 		size_t _current{};
+		std::string _filename;
 		size_t _lines{};
 		static const unsigned int _error_level = 0x0000A001;
 
@@ -166,14 +171,14 @@ struct Parser
 		
 		bool global(AstNode* global_node, hash_map& symbol_table, std::vector<Error>& error_list);
 		bool program(AstNode* program_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		bool prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vector<Error>& error_list);
+		bool prog_def(AstNode* prog_def_node, std::vector<Error>& error_list);
 		bool var_decl(AstNode* var_decl_node, hash_map& symbol_table, std::vector<Error>& error_list);
 
 		bool decl(AstNode* decl_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		bool id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		bool type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		bool arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vector<Error>& error_list);
-		bool basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::vector<Error>& error_list);		
+		bool id_list(AstNode* id_list_node, std::vector<Error>& error_list);
+		bool type(AstNode* type_node, std::vector<Error>& error_list);
+		bool arr_size(AstNode* arr_size_node, std::vector<Error>& error_list);
+		bool basic_type(AstNode* basic_type_node, std::vector<Error>& error_list);		
 
 		bool block(AstNode* block_node, hash_map& symbol_table, std::vector<Error>& error_list);
 

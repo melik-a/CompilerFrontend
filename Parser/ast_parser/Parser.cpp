@@ -66,7 +66,7 @@ bool Parser::program(AstNode* program_node, hash_map& symbol_table, std::vector<
 {
 	// PROGRAM	->	PROG_DEF VAR_DECL BLOCK
 	AstNode* prog_def_node = new AstNode(AstTag::PROG_DEF);
-	if (prog_def(prog_def_node, symbol_table, error_list))
+	if (prog_def(prog_def_node, error_list))
 	{
 		program_node->add_child(prog_def_node);
 		AstNode* var_decl_node = new AstNode(AstTag::VAR_DECL);
@@ -97,7 +97,7 @@ bool Parser::program(AstNode* program_node, hash_map& symbol_table, std::vector<
 }
 
 
-bool Parser::prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vector<Error>& error_list)
+bool Parser::prog_def(AstNode* prog_def_node, std::vector<Error>& error_list)
 {
 	// PROG_DEF	-> PROGRAM ID;
 	if (current_token().token_type == SyntaxTag::PROGRAM_TOKEN)
@@ -114,7 +114,7 @@ bool Parser::prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vecto
 			else
 			{
 				SyntaxToken err_t = current_token();
-				error_list.push_back(Error("current file", _error_level,
+				error_list.push_back(Error(_filename, _error_level,
 					ErrorTag::SYNTAX_ERROR,
 					"unexpected token, expected \"SEMICOLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
 					err_t.line, err_t.symbol_pos));
@@ -123,7 +123,7 @@ bool Parser::prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vecto
 		else
 		{
 			SyntaxToken err_t = current_token();
-			error_list.push_back(Error("current file", _error_level,
+			error_list.push_back(Error(_filename, _error_level,
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"ID_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
@@ -132,7 +132,7 @@ bool Parser::prog_def(AstNode* prog_def_node, hash_map& symbol_table, std::vecto
 	else
 	{
 		SyntaxToken err_t = current_token();
-		error_list.push_back(Error("current file", _error_level,
+		error_list.push_back(Error(_filename, _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected \"PROGRAM_TOKEN\", but given \"" + err_t.lexeme + "\".",
 			err_t.line, err_t.symbol_pos));
@@ -160,7 +160,7 @@ bool Parser::var_decl(AstNode* var_decl_node, hash_map& symbol_table, std::vecto
 	else
 	{
 		SyntaxToken err_t = current_token();
-		error_list.push_back(Error("current file", _error_level,
+		error_list.push_back(Error(_filename, _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected \"VAR_TOKEN\", but given \"" + err_t.lexeme + "\".",
 			err_t.line, err_t.symbol_pos));
@@ -173,16 +173,33 @@ bool Parser::decl(AstNode* decl_node, hash_map& symbol_table, std::vector<Error>
 {
 	// DECL	->	ID_LIST : TYPE DECL
 	AstNode* id_list_node = new AstNode(AstTag::ID_LIST);
-	if (id_list(id_list_node, symbol_table, error_list))
+	if (id_list(id_list_node, error_list))
 	{
+		
 		decl_node->add_child(id_list_node);
 		if (next_token().token_type == SyntaxTag::COLON_TOKEN)
 		{
 			decl_node->add_child(new SyntaxToken(current_token()));
 			AstNode* type_node = new AstNode(AstTag::TYPE);
-			if (type(type_node, symbol_table, error_list))
+			if (type(type_node, error_list))
 			{
 				decl_node->add_child(type_node);
+
+				for (int i = 0; i < id_list_node->num_of_children(); ++i)
+				{
+					SyntaxToken& child = dynamic_cast<SyntaxToken&>(*id_list_node->get_child(i));
+					// adding element in symbol table
+					if (child.token_type == SyntaxTag::ID_TOKEN && symbol_table.search(child.lexeme) == symbol_table.get_size())
+					{
+						if (type_node->num_of_children() == 1)
+						{
+							SyntaxToken& type = dynamic_cast<SyntaxToken&>(*type_node->get_child(0)->get_child(0));
+							symbol_table.insert(child.lexeme, child._value, type.token_type);
+						}
+					}
+					//
+				}
+
 				if (next_token().token_type == SyntaxTag::SEMICOLON_TOKEN)
 				{
 					decl_node->add_child(new SyntaxToken(current_token()));
@@ -191,7 +208,7 @@ bool Parser::decl(AstNode* decl_node, hash_map& symbol_table, std::vector<Error>
 				else
 				{
 					SyntaxToken err_t = current_token();
-					error_list.push_back(Error("current file", _error_level,
+					error_list.push_back(Error(_filename, _error_level,
 						ErrorTag::SYNTAX_ERROR,
 						"unexpected token, expected \"SEMICOLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
 						err_t.line, err_t.symbol_pos));
@@ -205,7 +222,7 @@ bool Parser::decl(AstNode* decl_node, hash_map& symbol_table, std::vector<Error>
 		else
 		{
 			SyntaxToken err_t = current_token();
-			error_list.push_back(Error("current file", _error_level,
+			error_list.push_back(Error(_filename, _error_level,
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"COLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
@@ -219,7 +236,7 @@ bool Parser::decl(AstNode* decl_node, hash_map& symbol_table, std::vector<Error>
 }
 
 
-bool Parser::id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<Error>& error_list)
+bool Parser::id_list(AstNode* id_list_node, std::vector<Error>& error_list)
 {
 	// ID_LIST	->	, ID ID_LIST
 	//			|	EPS
@@ -229,7 +246,7 @@ bool Parser::id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<
 		if (lookahead().token_type == SyntaxTag::COMMA_TOKEN)
 		{
 			id_list_node->add_child(new SyntaxToken(next_token()));
-			id_list(id_list_node, symbol_table, error_list);
+			id_list(id_list_node, error_list);
 		}
 		return true;
 	}
@@ -237,7 +254,7 @@ bool Parser::id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<
 	{
 		SyntaxToken err_t = lookahead();
 		if (err_t.token_type != SyntaxTag::BEGIN_TOKEN)
-			error_list.push_back(Error("current file", _error_level,
+			error_list.push_back(Error(_filename, _error_level,
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"ID_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
@@ -246,7 +263,7 @@ bool Parser::id_list(AstNode* id_list_node, hash_map& symbol_table, std::vector<
 }
 
 
-bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>& error_list)
+bool Parser::type(AstNode* type_node, std::vector<Error>& error_list)
 {
 	// TYPE	->	array[ARR_SIZE] of TYPE
 	//		|	BASIC_TYPE
@@ -257,7 +274,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 		{
 			type_node->add_child(new SyntaxToken(current_token()));
 			AstNode* arr_size_node = new AstNode(AstTag::ARR_SIZE);
-			if (arr_size(arr_size_node, symbol_table, error_list))
+			if (arr_size(arr_size_node, error_list))
 			{
 				type_node->add_child(arr_size_node);
 				if (next_token().token_type == SyntaxTag::RSB_TOKEN)
@@ -267,7 +284,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 					{
 						type_node->add_child(new SyntaxToken(current_token()));
 						AstNode* type_node_nested = new AstNode(AstTag::TYPE);
-						if (type(type_node_nested, symbol_table, error_list))
+						if (type(type_node_nested, error_list))
 						{
 							type_node->add_child(type_node_nested);
 							return true;
@@ -281,7 +298,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 					else
 					{
 						SyntaxToken err_t = current_token();
-						error_list.push_back(Error("current file", _error_level,
+						error_list.push_back(Error(_filename, _error_level,
 							ErrorTag::SYNTAX_ERROR,
 							"unexpected token, expected \"OF_TOKEN\", but given \"" + err_t.lexeme + "\".",
 							err_t.line, err_t.symbol_pos));
@@ -291,7 +308,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 				else
 				{
 					SyntaxToken err_t = current_token();
-					error_list.push_back(Error("current file", _error_level,
+					error_list.push_back(Error(_filename, _error_level,
 						ErrorTag::SYNTAX_ERROR,
 						"unexpected token, expected \"RSB_TOKEN\", but given \"" + err_t.lexeme + "\".",
 						err_t.line, err_t.symbol_pos));
@@ -307,7 +324,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 		else
 		{
 			SyntaxToken err_t = current_token();
-			error_list.push_back(Error("current file", _error_level,
+			error_list.push_back(Error(_filename, _error_level,
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"LSB_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
@@ -316,7 +333,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 	}
 
 	AstNode* basic_type_node = new AstNode(AstTag::BASIC_TYPE);
-	if (basic_type(basic_type_node, symbol_table, error_list))
+	if (basic_type(basic_type_node, error_list))
 	{
 		type_node->add_child(basic_type_node);
 		return true;
@@ -325,7 +342,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 	{
 		delete basic_type_node;
 		SyntaxToken err_t = current_token();
-		error_list.push_back(Error("current file", _error_level,
+		error_list.push_back(Error(_filename, _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected type declaration, but given \"" + err_t.lexeme + "\".",
 			err_t.line, err_t.symbol_pos));
@@ -335,7 +352,7 @@ bool Parser::type(AstNode* type_node, hash_map& symbol_table, std::vector<Error>
 }
 
 
-bool Parser::arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vector<Error>& error_list)
+bool Parser::arr_size(AstNode* arr_size_node, std::vector<Error>& error_list)
 {
 	// ARR_SIZE	-> 1..BYTE_NUMBER
 	SyntaxToken one = next_token();
@@ -357,7 +374,7 @@ bool Parser::arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vecto
 			else
 			{
 				SyntaxToken err_t = current_token();
-				error_list.push_back(Error("current file", _error_level,
+				error_list.push_back(Error(_filename, _error_level,
 					ErrorTag::SYNTAX_ERROR,
 					"unexpected token, expected \"INTEGER_NUMBER\", but given \"" + err_t.lexeme + "\".",
 					err_t.line, err_t.symbol_pos));
@@ -366,7 +383,7 @@ bool Parser::arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vecto
 		else
 		{
 			SyntaxToken err_t = current_token();
-			error_list.push_back(Error("current file", _error_level,
+			error_list.push_back(Error(_filename, _error_level,
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"DOT_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
@@ -374,7 +391,7 @@ bool Parser::arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vecto
 	}
 	else
 	{
-		error_list.push_back(Error("current file", _error_level,
+		error_list.push_back(Error(_filename, _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected \"1\", but given \"" + one.lexeme + "\".",
 			one.line, one.symbol_pos));
@@ -383,7 +400,7 @@ bool Parser::arr_size(AstNode* arr_size_node, hash_map& symbol_table, std::vecto
 }
 
 
-bool Parser::basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::vector<Error>& error_list)
+bool Parser::basic_type(AstNode* basic_type_node, std::vector<Error>& error_list)
 {
 	// BASIC_TYPE -> FLOAT_NUMBER_TYPE | INTEGER_TYPE | BOOL_TYPE | DOUBLE_TYPE | CHAR_TYPE | BYTE_TYPE		
 	SyntaxToken token = next_token();
@@ -399,7 +416,7 @@ bool Parser::basic_type(AstNode* basic_type_node, hash_map& symbol_table, std::v
 	}
 	else
 	{
-		error_list.push_back(Error("current file", _error_level,
+		error_list.push_back(Error(_filename, _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected some kind of datatype, but given \"" + token.lexeme + "\".",
 			token.line, token.symbol_pos));
@@ -433,7 +450,7 @@ bool Parser::block(AstNode* block_node, hash_map& symbol_table, std::vector<Erro
 			else
 			{
 				SyntaxToken err_t = current_token();
-				error_list.push_back(Error("current file", _error_level,
+				error_list.push_back(Error(_filename, _error_level,
 					ErrorTag::SYNTAX_ERROR,
 					"unexpected token, expected \"DOT_TOKEN\", but given \"" + err_t.lexeme + "\".",
 					err_t.line, err_t.symbol_pos));
@@ -442,7 +459,7 @@ bool Parser::block(AstNode* block_node, hash_map& symbol_table, std::vector<Erro
 		else
 		{
 			SyntaxToken err_t = current_token();
-			error_list.push_back(Error("current file", _error_level,
+			error_list.push_back(Error(_filename, _error_level,
 				ErrorTag::SYNTAX_ERROR,
 				"unexpected token, expected \"END_TOKEN\", but given \"" + err_t.lexeme + "\".",
 				err_t.line, err_t.symbol_pos));
@@ -451,7 +468,7 @@ bool Parser::block(AstNode* block_node, hash_map& symbol_table, std::vector<Erro
 	else
 	{
 		SyntaxToken err_t = current_token();
-		error_list.push_back(Error("current file", _error_level,
+		error_list.push_back(Error(_filename, _error_level,
 			ErrorTag::SYNTAX_ERROR,
 			"unexpected token, expected \"BEGIN_TOKEN\", but given \"" + err_t.lexeme + "\".",
 			err_t.line, err_t.symbol_pos));
@@ -467,11 +484,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 	//			|	EPS
 	if (lookahead().token_type == SyntaxTag::ID_TOKEN)
 	{
-		// adding element in symbol table
-		if (symbol_table.search(next_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
-		//
-		stmt_node->add_child(new SyntaxToken(current_token()));
+		stmt_node->add_child(new SyntaxToken(next_token()));
 		if (next_token().token_type == SyntaxTag::ASSIGN_TOKEN)
 		{
 			stmt_node->add_child(new SyntaxToken(current_token()));
@@ -487,7 +500,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 				else
 				{
 					SyntaxToken err_t = current_token();
-					error_list.push_back(Error("current file", _error_level,
+					error_list.push_back(Error(_filename, _error_level,
 						ErrorTag::SYNTAX_ERROR,
 						"unexpected token, expected \"SEMICOLON_TOKEN\", but given \"" + err_t.lexeme + "\".",
 						err_t.line, err_t.symbol_pos));
@@ -502,7 +515,7 @@ bool Parser::stmt(AstNode* stmt_node, hash_map& symbol_table, std::vector<Error>
 		{
 			
 			SyntaxToken err_t = current_token();
-			error_list.push_back(Error("current file", _error_level,
+			error_list.push_back(Error(_filename, _error_level,
 					ErrorTag::SYNTAX_ERROR,
 					"unexpected token, expected \"ASSIGN_TOKEN\", but given \"" + err_t.lexeme + "\".",
 					err_t.line, err_t.symbol_pos));
@@ -634,7 +647,7 @@ bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Er
 			else
 			{
 				SyntaxToken err_t = current_token();
-				error_list.push_back(Error("current file", _error_level,
+				error_list.push_back(Error(_filename, _error_level,
 					ErrorTag::SYNTAX_ERROR,
 					"unexpected token, expected \"RP_TOKEN\", but given \"" + err_t.lexeme + "\".",
 					err_t.line, err_t.symbol_pos));
@@ -657,13 +670,11 @@ bool Parser::factor(AstNode* factor_node, hash_map& symbol_table, std::vector<Er
 	}
 	else if (current_token().token_type == SyntaxTag::ID_TOKEN)
 	{
-		if (symbol_table.search(current_token().lexeme) == symbol_table.get_size())
-			symbol_table.insert(current_token().lexeme, current_token()._value, SyntaxTag::FLOAT_NUMBER);
 		factor_node->add_child(new SyntaxToken(current_token()));
 		return true;
 	}
 	SyntaxToken err_t = current_token();
-	error_list.push_back(Error("current file", _error_level,
+	error_list.push_back(Error(_filename, _error_level,
 		ErrorTag::SYNTAX_ERROR,
 		"unexpected token, expected \"ID_TOKEN\"\\some literal\\\"LP_TOKEN\", but given \"" + err_t.lexeme + "\".",
 		err_t.line, err_t.symbol_pos));

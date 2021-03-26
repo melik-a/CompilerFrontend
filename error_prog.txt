@@ -1,0 +1,18 @@
+program my_first_program;
+var 
+	some_var, another_one, _ten, result : float
+
+	some_var := &&0.9 * ^^10.5;
+	another_one@ := @some_var + 3.0;
+	_ten := 10e-2@@
+	int_variable@ :@= 2@0;
+	{ some comment here}
+	@result {another comment} := (some_var *another_one) / (some_var - _ten) * _ten;
+end@.
+
+
+
+
+
+{ fafasfag asfasfa}
+result{ fafasfag asfasfa}:=(some_var *another_one)/(some_var - _ten)*_ten;

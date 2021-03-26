@@ -4,9 +4,6 @@
 #include <io.h>
 #include <fcntl.h>
 /**
-*** to do:	add error handling, add evaluating, add id declaration,
-***			rework some classes to provide little bit oop design,
-***			rework main() - imagine some useful functionality.
 ***
 **/
 
@@ -66,7 +63,7 @@ int main()
 			try
 			{
 				ComplexFront front;
-				front.front_compile("demo.txt");
+				front.front_compile("program_demo.txt");
 				front.print_parsed_lines();
 				front.print_symbol_table();
 				front.draw_all_trees();

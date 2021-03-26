@@ -13,7 +13,7 @@ struct AstNode
 	AstNode();
 	AstNode(AstTag tag);
 	AstNode(AstTag tag, AstNode& trans, AstNode& add_sub);
-	~AstNode();
+	virtual ~AstNode();
 
 	void add_child(AstNode* child);
 	AstNode* get_child(int index);

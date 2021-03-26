@@ -5,7 +5,7 @@ ComplexFront::~ComplexFront()
 {
 	if (_parsed_ast)
 	{
-		for (auto& el : *_parsed_ast)
+		for (auto&& el : *_parsed_ast)
 		{
 			if (el)
 				delete el;
@@ -29,7 +29,7 @@ bool ComplexFront::front_compile(std::string file)
 
 		size_t num_of_lines = lexer.get_num_of_lines();
 
-		Parser parser(_lexems, num_of_lines);
+		Parser parser(_lexems, num_of_lines, file);
 		_symbol_table = new HashMap<std::string, float>();
 		
 		_parsed_ast = parser.parse(*_symbol_table, *_errors);
@@ -169,7 +169,7 @@ void ComplexFront::print_error_list()
 		<< "----"
 		<< "------"
 		<< "---\n";
-	for (auto& er : *_errors)
+	for (auto&& er : *_errors)
 	{
 		er.print();
 	}
@@ -192,7 +192,7 @@ void ComplexFront::draw_all_trees()
 	{
 		AstDrawer drawer;
 		std::cout << "\n-> parsed trees\n" << std::endl;
-		for (auto& ast : *_parsed_ast)
+		for (auto&& ast : *_parsed_ast)
 		{
 			drawer.draw_tree(ast, true);
 			std::cout << "\n" << std::endl;
