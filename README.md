@@ -2,8 +2,13 @@
 Simple compiler frontend part for pseudo-pascal simple statement.
 Front consist of: simple lexer based on state machine, simple symbol table based on hash table, simple LL(1) parser based on recursive descent.
 
+![Program](/img/execution.PNG "program") 
+*Graphical output of the program*
+
 # General
 At this moment front implements simple pseudo-pascal program grammar that consists of variable declarations and assignment statements.
+Variables can only be float type for a while, because of symbol table. Lexer and Parser recognize other datatypes and even arrays.
+Also compiler doesn't support evaluation, because this just a front part.
 A little bit notations:
 
 	GLOBAL - GLOBAL SCOPE
@@ -48,9 +53,11 @@ grammar rules:
 				|		/ FACTOR MUL_DIV
 				|		EPS
 		FACTOR		->		( EXPR )
-				|		FLOAT_NUMBER_NUMBER | INTEGER_NUMBER | BYTE_NUMBER | DOUBLE_NUMBER | CHAR_LITERAL | FALSE | TRUE 
+				|		FLOAT_NUMBER_NUMBER | INTEGER_NUMBER | BYTE_NUMBER 
+				| 		DOUBLE_NUMBER | CHAR_LITERAL | FALSE | TRUE 
 				|		ID
-		BASIC_TYPE	->		FLOAT_NUMBER_TYPE | INTEGER_TYPE | BOOL_TYPE | DOUBLE_TYPE | CHAR_TYPE | BYTE_TYPE
+		BASIC_TYPE	->		FLOAT_NUMBER_TYPE | INTEGER_TYPE | BOOL_TYPE 
+				| 		DOUBLE_TYPE | CHAR_TYPE | BYTE_TYPE
 
 	parser type LL(1)
 	algorithm - recursive descent
@@ -61,12 +68,10 @@ example of syntactically correct program:
 	program my_first_program;
 	var 
 		some_var, another_one, _ten, result: float;
-		int_variable : integer;
 	begin
 		some_var := 0.9 * 10.5;
 		another_one := some_var + 3.0;
 		_ten := 10e-2;
-		int_variable := 20;
 		{ some comment here}
 		result {another comment} := (some_var *another_one) / (some_var - _ten) * _ten;
 	end.
@@ -82,27 +87,19 @@ program parsing example:
 		|--- <VAR_DECL>
 		|    |--- <VAR_TOKEN, var>
 		|    |--- <DECL>
-		|    |    |--- <ID_LIST>
-		|    |    |    |--- <ID_TOKEN, some_var>
-		|    |    |    |--- <COMMA_TOKEN, ,>
-		|    |    |    |--- <ID_TOKEN, another_one>
-		|    |    |    |--- <COMMA_TOKEN, ,>
-		|    |    |    |--- <ID_TOKEN, _ten>
-		|    |    |    |--- <COMMA_TOKEN, ,>
-		|    |    |    |___ <ID_TOKEN, result>
-		|    |    |--- <COLON_TOKEN, :>
-		|    |    |--- <TYPE>
-		|    |    |    |___ <BASIC_TYPE>
-		|    |    |        |___ <FLOAT_TYPE, float>
-		|    |    |___ <SEMICOLON_TOKEN, ;>
-		|    |___ <DECL>
-		|        |--- <ID_LIST>
-		|        |    |___ <ID_TOKEN, int_variable>
-		|        |--- <COLON_TOKEN, :>
-		|        |--- <TYPE>
-		|        |    |___ <BASIC_TYPE>
-		|        |        |___ <INTEGER_TYPE, integer>
-		|        |___ <SEMICOLON_TOKEN, ;>
+		|         |--- <ID_LIST>
+		|         |    |--- <ID_TOKEN, some_var>
+		|         |    |--- <COMMA_TOKEN, ,>
+		|         |    |--- <ID_TOKEN, another_one>
+		|         |    |--- <COMMA_TOKEN, ,>
+		|         |    |--- <ID_TOKEN, _ten>
+		|         |    |--- <COMMA_TOKEN, ,>
+		|         |    |___ <ID_TOKEN, result>
+		|         |--- <COLON_TOKEN, :>
+		|         |--- <TYPE>
+		|         |    |___ <BASIC_TYPE>
+		|         |        |___ <FLOAT_TYPE, float>
+		|         |___ <SEMICOLON_TOKEN, ;>
 		|___ <BLOCK>
 		    |--- <BEGIN_TOKEN, begin>
 		    |--- <STMT>
@@ -127,6 +124,11 @@ statement parsing expamples:
 		|            |___ <FACTOR>
 		|                |___ <FLOAT_NUMBER, 10.5>
 		|___ <SEMICOLON_TOKEN, ;>
+
+front compiler also finds lexical and syntactical errors
+
+![error_prog](/img/error_prog.PNG)
+*example of program with some errors*
 
 # Front parts description
 
